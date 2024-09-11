@@ -4,7 +4,7 @@ This library adds Linq extension methods using OpenAI structured outputs. (heavi
 ## Architecture
 For each element in a collection an openAI API call is made to evaluate and return the result. These are done in parallel on background threads.
 
-## openAI
+## OpenAI ChatClient
 To use this you will need to instantiate a openAI like this:
 ```csharp
 var openai = new openAI(model: "gpt-4o-2024-08-06", "<OpenAIKey>");
