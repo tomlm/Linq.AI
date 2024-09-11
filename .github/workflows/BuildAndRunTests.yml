@@ -32,4 +32,6 @@ jobs:
       run: dotnet build --no-restore source/Linq.AI.OpenAI.sln --property WarningLevel=0
       
     - name: Test
-      run: dotnet test --no-build --verbosity normal source/Linq.AI.OpenAI.sln
+      run: |
+        dotnet user-secrets set OpenAIKey '${{ secrets.NUGET_KEY }}' 
+        dotnet test --no-build --verbosity normal source/Linq.AI.OpenAI.sln
