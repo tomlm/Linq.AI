@@ -105,7 +105,7 @@ var bigItems = items.Remove(model, "item would fit in a bread box");
 #### Object transformation
 You can use it to transform an object from one format to another by simply giving the types. It will use model. to do the transformation.
 ```csharp
-var targetItems = items.Select<SourceItem,TargetItem>(model")
+var targetItems = items.Select<SourceItem,TargetItem>(model)
 ```
 
 #### String transformation
