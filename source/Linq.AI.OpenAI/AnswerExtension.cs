@@ -23,7 +23,7 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async static Task<string> Answer(this string text, ChatClient model, string question, string? instructions = null, CancellationToken cancellationToken = default)
+        public async static Task<string> AnswerAsync(this string text, ChatClient model, string question, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<AnswerItem>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "answer", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
@@ -59,12 +59,12 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<string> Answer<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IList<string> Answer<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             return source.SelectParallelAsync(async (item, index) =>
             {
                 var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
-                return await text!.Answer(model, question, instructions, cancellationToken);
+                return await text!.AnswerAsync(model, question, instructions, cancellationToken);
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 

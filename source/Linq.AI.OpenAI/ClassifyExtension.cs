@@ -35,11 +35,11 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async static Task<EnumT> Classify<EnumT>(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public async static Task<EnumT> ClassifyAsync<EnumT>(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
         {
             var categories = Enum.GetValues<EnumT>().Select(val => val.ToString()).ToList();
-            var category = await text.Classify(model, categories, goal, instructions, cancellationToken);
+            var category = await text.ClassifyAsync(model, categories, goal, instructions, cancellationToken);
             return Enum.Parse<EnumT>(category);
         }
         
@@ -54,7 +54,7 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async static Task<string> Classify(this string text, ChatClient model, IList<string> categories, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public async static Task<string> ClassifyAsync(this string text, ChatClient model, IList<string> categories, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<ClassifiedItem>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "classify", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
@@ -89,7 +89,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<ClassifiedItem<string, EnumT>> Classify<EnumT>(this IEnumerable<string> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IList<ClassifiedItem<string, EnumT>> Classify<EnumT>(this IEnumerable<string> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
         {
             var categories = Enum.GetValues<EnumT>().Select(val => val.ToString()).ToList();
@@ -99,7 +99,7 @@ namespace Linq.AI.OpenAI
                 {
                     Item = result.Item,
                     Category = Enum.Parse<EnumT>(result.Category),
-                });
+                }).ToList();
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<ClassifiedItem<string, string>> Classify(this IEnumerable<string> source, ChatClient model, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IList<ClassifiedItem<string, string>> Classify(this IEnumerable<string> source, ChatClient model, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             return source.Classify<string>(model, categories, goal, instructions, maxParallel, cancellationToken);
         }
@@ -128,14 +128,14 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<ClassifiedItem<T, string>> Classify<T>(this IEnumerable<T> source, ChatClient model, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IList<ClassifiedItem<T, string>> Classify<T>(this IEnumerable<T> source, ChatClient model, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             var count = source.Count();
 
             return source.SelectParallelAsync(async (item, index) =>
             {
                 var  text = (item is string) ? (item as string): JsonConvert.SerializeObject(item).ToString()!;
-                var category = await text!.Classify(model, categories, goal, instructions, cancellationToken);
+                var category = await text!.ClassifyAsync(model, categories, goal, instructions, cancellationToken);
                 return new ClassifiedItem<T, string>()
                 {
                     Item = item,

@@ -28,7 +28,7 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async static Task<bool> Matches(this string text, ChatClient model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
+        public async static Task<bool> MatchesAsync(this string text, ChatClient model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<WhereItem>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Where", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
@@ -65,12 +65,12 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<T> Where<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IList<T> Where<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             return source.WhereParallelAsync(async (item, index) =>
             {
                 var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
-                return await text!.Matches(model, goal, instructions, cancellationToken);
+                return await text!.MatchesAsync(model, goal, instructions, cancellationToken);
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 

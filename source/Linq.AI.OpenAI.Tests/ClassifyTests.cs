@@ -12,14 +12,14 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Classify_Text_Enum()
         {
-            var result = await "Ford".Classify<TestCategories>(Model);
+            var result = await "Ford".ClassifyAsync<TestCategories>(Model);
             Assert.AreEqual(TestCategories.Car, result);
         }
 
         [TestMethod]
         public async Task Classifiy_Text_Strings()
         {
-            var result = await "Ford".Classify(Model, Categories);
+            var result = await "Ford".ClassifyAsync(Model, Categories);
             Assert.AreEqual("Car", result);
         }
 

@@ -7,10 +7,10 @@ namespace Linq.AI.OpenAI.Tests
     {
 
         [TestMethod]
-        public async void Matches()
+        public async Task Matches()
         {
-            Assert.IsTrue(await "a duck".Matches(Model, "a bird"));
-            Assert.IsFalse(await "a truck".Matches(Model, "a bird"));
+            Assert.IsTrue(await "a duck".MatchesAsync(Model, "a bird"));
+            Assert.IsFalse(await "a truck".MatchesAsync(Model, "a bird"));
         }
 
         [TestMethod]
@@ -18,7 +18,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "dog", "caterpillar", "airline", "chair"];
 
-            var results = items.Where(Model, "keep things you can travel on").ToList();
+            var results = items.Where(Model, "keep things you can travel on");
             Assert.IsTrue(results.Contains("horse"));
             Assert.IsTrue(results.Contains("airline"));
             Assert.IsFalse(results.Contains("dog"));
@@ -31,7 +31,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "dog", "caterpillar", "airline", "chair"];
 
-            var results = items.Select(item => new { Name = item }).Where(Model, "it is something you can ride").ToList();
+            var results = items.Select(item => new { Name = item }).Where(Model, "it is something you can ride");
             Assert.IsTrue(results.Any(item => item.Name == "horse"));
             Assert.IsTrue(results.Any(item => item.Name == "airline"));
             Assert.IsFalse(results.Any(item => item.Name == "dog"));

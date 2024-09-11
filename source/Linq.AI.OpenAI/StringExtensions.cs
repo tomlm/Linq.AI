@@ -29,7 +29,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static async Task<IEnumerable<T>> Select<T>(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public static async Task<IEnumerable<T>> SelectAsync<T>(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Extraction<T>>().ToString();
 

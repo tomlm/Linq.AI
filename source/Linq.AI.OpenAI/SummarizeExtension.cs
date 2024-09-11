@@ -25,7 +25,7 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async static Task<string> Summarize(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public async static Task<string> SummarizeAsync(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Summarization>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "summarize", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
@@ -61,12 +61,12 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<string> Summarize<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IList<string> Summarize<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             return source.SelectParallelAsync(async (item, index) =>
             {
                 var text = item is string ? item as string : JsonConvert.SerializeObject(item).ToString();
-                return await text!.Summarize(model, goal, instructions, cancellationToken);
+                return await text!.SummarizeAsync(model, goal, instructions, cancellationToken);
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 

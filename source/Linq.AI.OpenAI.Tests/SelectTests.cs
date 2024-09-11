@@ -38,7 +38,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Select_Text_String()
         {
-            var results = (await Text.Select<string>(Model, "the first word in a paragraph that starts with the letter 'o' or 'b'")).ToList();
+            var results = (await Text.SelectAsync<string>(Model, "the first word in a paragraph that starts with the letter 'o' or 'b'")).ToList();
             foreach (var result in results)
             {
                 Assert.IsTrue(Char.ToLower(result[0]) == 'o' || Char.ToLower(result[0]) == 'b');
@@ -54,7 +54,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Select_Text_Object()
         {
-            var results = (await Text.Select<Article>(Model)).ToList();
+            var results = (await Text.SelectAsync<Article>(Model)).ToList();
 
             Assert.AreEqual("Early Life and Education", results[0].Title);
             Assert.IsNotNull(results[0].Paragraph);
