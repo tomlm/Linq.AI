@@ -8,9 +8,10 @@ namespace Linq.AI.OpenAI.Tests
         private static Lazy<ChatClient> client = new Lazy<ChatClient>(() =>
         {
             var config = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
                 .AddUserSecrets<ClassifyTests>()
                 .Build();
-            return new ChatClient(model: "gpt-4o-2024-08-06", config["OpenAIKey"]);
+            return new ChatClient(model: "gpt-4o-2024-08-06", config["OpenAIKey"] ?? config["OPENAIKEY"]);
         });
 
         public static ChatClient Model
