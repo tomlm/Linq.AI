@@ -1,0 +1,35 @@
+name: BuildAndRunTests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+    - source/**
+  pull_request:
+    branches: [ "main" ]
+    paths:
+    - source/**
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Linq.AI.OpenAI
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore source/Linq.AI.OpenAI.sln 
+
+    - name: Build
+      run: dotnet build --no-restore source/Linq.AI.OpenAI.sln --property WarningLevel=0
+      
+    - name: Test
+      run: dotnet test --no-build --verbosity normal source/Linq.AI.OpenAI.sln
