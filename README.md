@@ -3,7 +3,7 @@ This library adds Linq extension methods using OpenAI structured outputs.
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
 
 ## Installation
-```dotnet add Linq.AI.OpenAI```
+```dotnet add package Linq.AI.OpenAI ```
 
 ## Architecture
 For each element in a collection an openAI API call is made to evaluate and return the result. These are done in parallel on background threads.
