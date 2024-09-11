@@ -16,9 +16,9 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<T> RemoveAI<T>(this IEnumerable<T> source, ChatClient chatClient, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<T> Remove<T>(this IEnumerable<T> source, ChatClient chatClient, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            var removeItems = source.WhereAI(chatClient, goal, instructions, maxParallel, cancellationToken).ToList();
+            var removeItems = source.Where(chatClient, goal, instructions, maxParallel, cancellationToken).ToList();
             return source.Where(item => !removeItems.Contains(item));
         }
     }

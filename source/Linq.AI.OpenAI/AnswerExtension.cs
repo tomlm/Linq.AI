@@ -25,7 +25,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<string> AnswerAI<SourceT>(this IEnumerable<SourceT> source, ChatClient chatClient, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<string> Answer<SourceT>(this IEnumerable<SourceT> source, ChatClient chatClient, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<AnswerItem>().ToString();
 

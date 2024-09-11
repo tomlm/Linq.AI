@@ -46,7 +46,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.SelectAI(ChatClient, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
+            var results = sources.Select(ChatClient, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
             var result = results[0];
             Assert.IsTrue(result.StartsWith("#"));
             Assert.IsTrue(result.Split('\n').First().Contains("Title 1"));
@@ -63,7 +63,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.SelectAI<TargetObject>(ChatClient).ToList();
+            var results = sources.Select<TargetObject>(ChatClient).ToList();
             var result = results[0];
             Assert.AreEqual("Joe Blow", result.AuthorFullName);
             Assert.AreEqual("Joe", result.Author!.FirstName);
@@ -91,7 +91,7 @@ namespace Linq.AI.OpenAI.Tests
                 new SourceObject() { Title="Title 3", Description="Which is better? Flossing or brushing or doing nothing?", Writer="Gert Gooble", PubliicationDate = new DateTime(2020, 10, 1) },
             };
 
-            foreach (var result in sources.SelectAI<SourceObject, TargetObject>(ChatClient))
+            foreach (var result in sources.Select<SourceObject, TargetObject>(ChatClient))
             {
                 switch (result.Summary)
                 {

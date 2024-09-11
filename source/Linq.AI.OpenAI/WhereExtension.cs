@@ -34,7 +34,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<T> WhereAI<T>(this IEnumerable<T> source, ChatClient chatClient, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<T> Where<T>(this IEnumerable<T> source, ChatClient chatClient, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             // TODO get this from someplace...
             var schema = StructuredSchemaGenerator.FromType<WhereItem>().ToString();

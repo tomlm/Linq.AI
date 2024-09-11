@@ -34,7 +34,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<string> SummarizeAI<SourceT>(this IEnumerable<SourceT> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<string> Summarize<SourceT>(this IEnumerable<SourceT> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
 
             var schema = StructuredSchemaGenerator.FromType<Summarization>().ToString();

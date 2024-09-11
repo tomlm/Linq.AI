@@ -14,30 +14,30 @@ new ChatClient(model: "gpt-4o-2024-08-06", "<OpenAIKey>");
 
 | Extension | Description | 
 | ----------| ------------|
-| ***.WhereAI()*** | Filter the collection of items by using a LLM filter |
-| ***.SelectAI()*** | transform the item into another format using a LLM |
-| ***.RemoveAI()*** | Remove items from a collection of items by using a LLM filter |
-| ***.SummarizeAI()*** | Create a summarization for each item by using a LLM |
-| ***.ClassifyAI()*** | classify each item using a LLM |
-| ***.AnswerAI()*** | get the answer to a question for each item using a LLM |
+| ***.Where()*** | Filter the collection of items by using a LLM filter |
+| ***.Select()*** | transform the item into another format using a LLM |
+| ***.Remove()*** | Remove items from a collection of items by using a LLM filter |
+| ***.Summarize()*** | Create a summarization for each item by using a LLM |
+| ***.Classify()*** | classify each item using a LLM |
+| ***.Answer()*** | get the answer to a question for each item using a LLM |
 
 # Examples
 
-## .ClassifyAI( )
+## .Classify( )
 This allows you to classify each item using LLM.
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
 var classifiedItems = items.ClassifyAI<Genres>(chatClient)).ToList();
 ```
 
-## .WhereAI()/.RemoveAI()
+## .Where()/.Remove()
 This lets you filter a collection using natural language
 ```csharp
-var breadboxItems = items.WhereAI(chatClient, "item would fit in a bread box")).ToList()
-var bigItems = items.RemoveAI(chatClient, "item would fit in a bread box")).ToList()
+var breadboxItems = items.Where(chatClient, "item would fit in a bread box")).ToList()
+var bigItems = items.Remove(chatClient, "item would fit in a bread box")).ToList()
 ```
 
-## .SelectAI()
+## .Select()
 This lets you transform the source into another structure using natural language.
 
 ### Object transformation
@@ -48,32 +48,32 @@ var targetItems = items.SelectAI<SourceItem,TargetItem>(chatClient"))
 
 ### String transformation
 ```chsarp
-var markdownItems = items.SelectAI(chatClient, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
+var markdownItems = items.Select(chatClient, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
 ```
 
-## .SummarizeAI()
+## .Summarize()
 Generate text summary for each object.
 
 ```chsarp
-var summaries= items.SummarizeAI(chatClient)
+var summaries= items.Summarize(chatClient)
 ```
 
 You can control the summarization with a hint
 ```csharp
-var summaries = items.SummarizeAI(chatClient, "genreate a 3 paragraph summary");
+var summaries = items.Summarize(chatClient, "genreate a 3 paragraph summary");
 ```
 
-## .AnswerAI()
+## .Answer()
 This operator let's you ask a question for each item in a collection.
 ```csharp
-var answers = items.AnswerAI(chatClient, "What is total cost of the item as a float?").Select(answer => Convert.ToFloat(answer));
+var answers = items.Answer(chatClient, "What is total cost of the item as a float?").Select(answer => Convert.ToFloat(answer));
 ```
 
 # Chaining operations
 Linq.AI operations and normal linq operations can be mixed together.
 ```csharp
 var populations = items.SelectAI<SourceT, TargetT>(chatClient)
-	.SummarizeAI(chatClient)
-	.AnswerAI(chatClient, "What is the population?")
+	.Summarize(chatClient)
+	.Answer(chatClient, "What is the population?")
 	.Select(answer => Convert.ToInt32(answer));
 ```

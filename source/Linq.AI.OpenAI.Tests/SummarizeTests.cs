@@ -21,12 +21,12 @@ namespace Linq.AI.OpenAI.Tests
         public void Summarize_Strings()
         {
             var docs = GetDocs();
-            foreach (var result in docs.SummarizeAI(ChatClient))
+            foreach (var result in docs.Summarize(ChatClient))
             {
                 Assert.IsNotNull(result);
             }
 
-            foreach (var result in docs.SummarizeAI(ChatClient, "Create a 3 bullet summary"))
+            foreach (var result in docs.Summarize(ChatClient, "Create a 3 bullet summary"))
             {
                 Assert.IsNotNull(result);
             }
@@ -36,7 +36,7 @@ namespace Linq.AI.OpenAI.Tests
         public void Summarize_Objects()
         {
             var docs = GetDocs().Select(markdown => new TestObject() { Item = markdown }).ToList();
-            foreach (var result in docs.SummarizeAI(ChatClient))
+            foreach (var result in docs.Summarize(ChatClient))
             {
                 Assert.IsNotNull(result);
             }

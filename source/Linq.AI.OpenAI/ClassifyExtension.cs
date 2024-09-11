@@ -36,11 +36,11 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<ClassifiedItem<string, EnumT>> ClassifyAI<EnumT>(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<ClassifiedItem<string, EnumT>> Classify<EnumT>(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
         {
             var categories = Enum.GetValues<EnumT>().Select(val => val.ToString()).ToList();
-            return source.ClassifyAI(chatClient, categories, goal, instructions, maxParallel, cancellationToken)
+            return source.Classify(chatClient, categories, goal, instructions, maxParallel, cancellationToken)
                 .Select(result => new ClassifiedItem<string, EnumT>()
                 {
                     Item = result.Item,
@@ -59,9 +59,9 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<ClassifiedItem<string, string>> ClassifyAI(this IEnumerable<string> source, ChatClient chatClient, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<ClassifiedItem<string, string>> Classify(this IEnumerable<string> source, ChatClient chatClient, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.ClassifyAI<string>(chatClient, categories, goal, instructions, maxParallel, cancellationToken);
+            return source.Classify<string>(chatClient, categories, goal, instructions, maxParallel, cancellationToken);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<ClassifiedItem<T, string>> ClassifyAI<T>(this IEnumerable<T> source, ChatClient chatClient, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<ClassifiedItem<T, string>> Classify<T>(this IEnumerable<T> source, ChatClient chatClient, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             // TODO get this from someplace...
             var schema = StructuredSchemaGenerator.FromType<ClassifiedItem>().ToString();

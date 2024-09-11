@@ -12,7 +12,7 @@ namespace Linq.AI.OpenAI.Tests
             string[] items = ["Super hornet", "Orient Express", "Ford", "puch"];
             string[] categories = ["Car", "Bike", "Train", "Plane"];
 
-            foreach (var result in items.ClassifyAI(ChatClient, categories))
+            foreach (var result in items.Classify(ChatClient, categories))
             {
                 switch (result.Item)
                 {
@@ -38,7 +38,7 @@ namespace Linq.AI.OpenAI.Tests
             string[] items = ["Super hornet", "Orient Express", "nash", "puch"];
             string[] categories = ["Car", "Bike", "Train", "Plane"];
 
-            foreach (var result in items.Select(name => new TestObject() { Item = name }).ClassifyAI(ChatClient, categories))
+            foreach (var result in items.Select(name => new TestObject() { Item = name }).Classify(ChatClient, categories))
             {
                 switch (result.Item.Item)
                 {
@@ -64,7 +64,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["Super hornet", "Orient Express", "Ford", "puch"];
 
-            foreach (var result in items.ClassifyAI<Categories>(ChatClient))
+            foreach (var result in items.Classify<Categories>(ChatClient))
             {
                 switch (result.Item)
                 {
@@ -126,7 +126,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Hip Hop - Music that features rap and a strong rhythmic beat"
             ];
 
-            var results = artists.ClassifyAI(ChatClient, categories, "Identify the genre of each artist from the list.").ToList();
+            var results = artists.Classify(ChatClient, categories, "Identify the genre of each artist from the list.").ToList();
 
             Assert.AreEqual("Pop", results.Single(result => result.Item == "Ed Sheeran").Category);
             Assert.AreEqual("Rock", results.Single(result => result.Item == "Queen").Category);

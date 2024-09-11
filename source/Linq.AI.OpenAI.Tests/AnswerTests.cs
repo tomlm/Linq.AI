@@ -67,7 +67,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Answer_Objects()
         {
-            var results = Forecast.AnswerAI(ChatClient, "What is the temperature difference as an integer?").Select(text => int.Parse(text)).ToList();
+            var results = Forecast.Answer(ChatClient, "What is the temperature difference as an integer?").Select(text => int.Parse(text)).ToList();
             for(int i=0; i < Forecast.Count;i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);
@@ -78,8 +78,8 @@ namespace Linq.AI.OpenAI.Tests
         public void Answer_Strings()
         {
             var results = Forecast
-                .SummarizeAI(ChatClient)
-                .AnswerAI(ChatClient, "What is the temperature difference as an integer with no units?").Select(text => int.Parse(text)).ToList();
+                .Summarize(ChatClient)
+                .Answer(ChatClient, "What is the temperature difference as an integer with no units?").Select(text => int.Parse(text)).ToList();
             for (int i = 0; i < Forecast.Count; i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);

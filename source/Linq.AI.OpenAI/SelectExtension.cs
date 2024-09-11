@@ -25,9 +25,9 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<string> SelectAI(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<string> Select(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.SelectAI<string, SelectItem<string>>(chatClient, goal, instructions, maxParallel, cancellationToken)
+            return source.Select<string, SelectItem<string>>(chatClient, goal, instructions, maxParallel, cancellationToken)
                         .Select(s => s.Result!);
         }
 
@@ -42,9 +42,9 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<ResultT> SelectAI<ResultT>(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<ResultT> Select<ResultT>(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.SelectAI<string, ResultT>(chatClient, goal, instructions, maxParallel, cancellationToken);
+            return source.Select<string, ResultT>(chatClient, goal, instructions, maxParallel, cancellationToken);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<ResultT> SelectAI<SourceT, ResultT>(this IEnumerable<SourceT> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<ResultT> Select<SourceT, ResultT>(this IEnumerable<SourceT> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<ResultT>().ToString();
 
