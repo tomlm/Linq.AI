@@ -8,7 +8,7 @@ For each element in a collection an openAI API call is made to evaluate and retu
 ## OpenAI ChatClient
 To use this you will need to instantiate a openAI like this:
 ```csharp
-var openai = new openAI(model: "gpt-4o-2024-08-06", "<OpenAIKey>");
+var openai = new ChatClient(model: "gpt-4o-2024-08-06", "<OpenAIKey>");
 ```
 
 # Extensions
