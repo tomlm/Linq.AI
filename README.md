@@ -11,6 +11,7 @@ new ChatClient(model: "gpt-4o-2024-08-06", "<OpenAIKey>");
 ```
 
 # Extensions
+These extensions all take a ChatClient() as parameter and use OpenAI API to resolve.
 
 | Extension | Description | 
 | ----------| ------------|
