@@ -35,9 +35,38 @@ namespace Linq.AI.OpenAI.Tests
     public partial class SelectTests : UnitTestBase
     {
 
-        
         [TestMethod]
-        public void Select_String2String()
+        public async Task Select_Text_String()
+        {
+            var results = (await Text.Select<string>(Model, "the first word in a paragraph that starts with the letter 'o' or 'b'")).ToList();
+            foreach (var result in results)
+            {
+                Assert.IsTrue(Char.ToLower(result[0]) == 'o' || Char.ToLower(result[0]) == 'b');
+            }
+        }
+
+        public class Article
+        {
+            public string? Title { get; set; }
+            public string? Paragraph { get; set; }
+        }
+
+        [TestMethod]
+        public async Task Select_Text_Object()
+        {
+            var results = (await Text.Select<Article>(Model)).ToList();
+
+            Assert.AreEqual("Early Life and Education", results[0].Title);
+            Assert.IsNotNull(results[0].Paragraph);
+
+            Assert.AreEqual("Law Career and Community Organizing", results[1].Title);
+            Assert.IsNotNull(results[1].Paragraph);
+
+            Assert.AreEqual(10, results.Count);
+        }
+
+        [TestMethod]
+        public void Select_Collection_String2String()
         {
             var sources = new List<string>()
             {
@@ -46,7 +75,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.Select(ChatClient, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
+            var results = sources.Select(Model, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
             var result = results[0];
             Assert.IsTrue(result.StartsWith("#"));
             Assert.IsTrue(result.Split('\n').First().Contains("Title 1"));
@@ -54,7 +83,7 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Select_String2Object()
+        public void Select_Collection_String2Object()
         {
             var sources = new List<string>()
             {
@@ -63,7 +92,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.Select<TargetObject>(ChatClient).ToList();
+            var results = sources.Select<TargetObject>(Model).ToList();
             var result = results[0];
             Assert.AreEqual("Joe Blow", result.AuthorFullName);
             Assert.AreEqual("Joe", result.Author!.FirstName);
@@ -82,7 +111,7 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Select_Object2Object()
+        public void Select_Collection_Object2Object()
         {
             var sources = new List<SourceObject>()
             {
@@ -91,7 +120,7 @@ namespace Linq.AI.OpenAI.Tests
                 new SourceObject() { Title="Title 3", Description="Which is better? Flossing or brushing or doing nothing?", Writer="Gert Gooble", PubliicationDate = new DateTime(2020, 10, 1) },
             };
 
-            foreach (var result in sources.Select<SourceObject, TargetObject>(ChatClient))
+            foreach (var result in sources.Select<SourceObject, TargetObject>(Model))
             {
                 switch (result.Summary)
                 {

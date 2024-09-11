@@ -15,6 +15,40 @@ namespace Linq.AI.OpenAI
     public static class AnswerExtension
     {
         /// <summary>
+        /// Answer a question about the text
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="chatClient"></param>
+        /// <param name="question"></param>
+        /// <param name="instructions"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async static Task<string> Answer(this string text, ChatClient model, string question, string? instructions = null, CancellationToken cancellationToken = default)
+        {
+            var schema = StructuredSchemaGenerator.FromType<AnswerItem>().ToString();
+            var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "answer", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
+            ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
+            var systemChatMessage = GetSystemPrompt(text!, instructions);
+            var itemMessage = new UserChatMessage(question);
+            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+            return chatCompletion.Content.Select(completion =>
+            {
+                if (Debugger.IsAttached)
+                {
+                    lock (model)
+                    {
+                        Debug.WriteLine("===============================================");
+                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                        Debug.WriteLine(itemMessage.Content.Single().Text);
+                    }
+                    Debug.WriteLine(completion.Text);
+                }
+                return JsonConvert.DeserializeObject<AnswerItem>(completion.Text)!.Answer;
+            }).Single()!;
+        }
+
+
+        /// <summary>
         /// Answer a question about the item.
         /// </summary>
         /// <typeparam name="SourceT">type of the item</typeparam>
@@ -25,37 +59,16 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<string> Answer<SourceT>(this IEnumerable<SourceT> source, ChatClient chatClient, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<string> Answer<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            var schema = StructuredSchemaGenerator.FromType<AnswerItem>().ToString();
-
-            var count = source.Count();
-
             return source.SelectParallelAsync(async (item, index) =>
             {
-                var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "answer", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
-                ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
-                var systemChatMessage = GetSystemPrompt(item!, instructions);
-                var itemMessage = new UserChatMessage(question);
-                ChatCompletion chatCompletion = await chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options);
-                return chatCompletion.Content.Select(completion =>
-                {
-                    if (Debugger.IsAttached)
-                    {
-                        lock (source)
-                        {
-                            Debug.WriteLine("===============================================");
-                            Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                            Debug.WriteLine(itemMessage.Content.Single().Text);
-                        }
-                        Debug.WriteLine(completion.Text);
-                    }
-                    return JsonConvert.DeserializeObject<AnswerItem>(completion.Text)!.Answer;
-                }).Single()!;
-            }, maxParallel: maxParallel ?? int.MaxValue);
+                var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
+                return await text!.Answer(model, question, instructions, cancellationToken);
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 
-        private static SystemChatMessage GetSystemPrompt(object context, string? instructions = null)
+        private static SystemChatMessage GetSystemPrompt(string context, string? instructions = null)
         {
             if (!(context is string))
             {

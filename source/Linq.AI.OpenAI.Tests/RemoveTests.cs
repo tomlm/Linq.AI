@@ -8,11 +8,11 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Remove_Strings()
         {
-            string[] items = ["horse", "dog", "caterpillar", "airline", "chair"];
+            string[] items = ["horse", "dog", "caterpillar", "airplane", "chair"];
 
-            var results = items.Remove(ChatClient, "things you can travel on").ToList();
+            var results = items.Remove(Model, "things you can travel on").ToList();
             Assert.IsFalse(results.Contains("horse"));
-            Assert.IsFalse(results.Contains("airline"));
+            Assert.IsFalse(results.Contains("airplane"));
             Assert.IsTrue(results.Contains("dog"));
             Assert.IsTrue(results.Contains("caterpillar"));
             Assert.IsTrue(results.Contains("chair"));
@@ -21,9 +21,11 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Remove_Objects()
         {
-            string[] items = ["horse", "dog", "caterpillar", "airline", "chair"];
+            string[] items = ["horse", "dog", "caterpillar", "airplane", "chair"];
+            var list = items.Select(item => new { Name = item }).ToList();
 
-            var results = items.Select(item => new { Name = item }).Remove(ChatClient, "it is something you can ride").ToList();
+            var results = list.Remove(Model, "it is something you can ride").ToList();
+
             Assert.IsFalse(results.Any(item => item.Name == "horse"));
             Assert.IsFalse(results.Any(item => item.Name == "airline"));
             Assert.IsTrue(results.Any(item => item.Name == "dog"));

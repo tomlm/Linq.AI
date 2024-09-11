@@ -1,4 +1,6 @@
-﻿using OpenAI.Chat;
+﻿using Iciclecreek.Async;
+using Newtonsoft.Json;
+using OpenAI.Chat;
 
 namespace Linq.AI.OpenAI
 {
@@ -16,10 +18,13 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<T> Remove<T>(this IEnumerable<T> source, ChatClient chatClient, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<T> Remove<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            var removeItems = source.Where(chatClient, goal, instructions, maxParallel, cancellationToken).ToList();
-            return source.Where(item => !removeItems.Contains(item));
+            return source.WhereParallelAsync(async (item, index) =>
+            {
+                var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
+                return !(await text!.Matches(model, goal, instructions, cancellationToken));
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
     }
 }

@@ -1,80 +1,129 @@
-# Linq.AI.OpenAI
-This library adds Linq extension methods using OpenAI structured outputs. (heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library)
+# Linq.AI.model
+This library adds Linq extension methods using model structured outputs. 
 
 ## Architecture
-For each element in a collection an openAI API call is made to evaluate and return the result. These are done in parallel on background threads.
+For each element in a collection an model API call is made to evaluate and return the result. These are done in parallel on background threads.
 
-## openAI
-To use this you will need to instantiate a openAI like this:
+## OpenAI model
+To use these methods you will need to instantiate a ChatClient model like this:
 ```csharp
-var openai = new openAI(model: "gpt-4o-2024-08-06", "<OpenAIKey>");
+var model = new ChatClient(model: "gpt-4o-2024-08-06", "<modelKey>");
 ```
+> NOTE: The model must support structured output.
 
-# Extensions
-These extensions all take a openAI() as parameter and use OpenAI API to resolve.
+# String Extensions
+These extensions use an OpenAI model to work with text.
 
 | Extension | Description | 
 | ----------| ------------|
-| ***.Where()*** | Filter the collection of items by using a LLM filter |
-| ***.Select()*** | transform the item into another format using a LLM |
-| ***.Remove()*** | Remove items from a collection of items by using a LLM filter |
-| ***.Summarize()*** | Create a summarization for each item by using a LLM |
-| ***.Classify()*** | classify each item using a LLM |
-| ***.Answer()*** | get the answer to a question for each item using a LLM |
+| ***.Classify()*** | classify the text using a model. |
+| ***.Summarize()*** | Create a summarization for the text by using a model. |
+| ***.Matches()*** | Return whether the text matches using a model. |
+| ***.Answer()*** | get the answer to a question from the text using a model. |
+| ***.Select()*** | Generate a collection of items from the text using a model. |
 
-# Examples
+## Examples
 
-## .Classify( )
-This allows you to classify each item using LLM.
+### .Classify() text
+
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classifiedItems = items.Classify<Genres>(openAI).ToList();
+var classification = await text.Classify<Genres>(model);
 ```
 
-## .Where()/.Remove()
-This lets you filter a collection using natural language
+### .Summarize() text
+
 ```csharp
-var breadboxItems = items.Where(openAI, "item would fit in a bread box").ToList()
-var bigItems = items.Remove(openAI, "item would fit in a bread box").ToList()
+var summary = await text.Summarize(model, "with 3 words");
 ```
 
-## .Select()
-This lets you transform the source into another structure using natural language.
+### .Matches() text
 
-### Object transformation
-You can use it to transform an object from one format to another by simply giving the types. It will use LLM to do the transformation.
 ```csharp
-var targetItems = items.Select<SourceItem,TargetItem>(openAI")
+if (await text.Matches(model, "there is date"))
+  ...
 ```
 
-### String transformation
-```chsarp
-var markdownItems = items.Select(openAI, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
+### .Answer() text
+
+```csharp
+var summary = await text.Answer(model, "what is the birthday?");
 ```
 
-## .Summarize()
-Generate text summary for each object.
+### .Select() text
+
+Example using model to select 
+```csharp
+var words = await text.Select<string>(model, "The second word of every paragraph");
+```
+
+Example using model to select structed data.
+```csharp
+public class HREF 
+{ 
+	public string Url {get;set;}
+	public string Title {get;set;}
+}
+var summary = await text.Select<HREF>(model);
+```
+
+# Collection Extensions 
+These collection extensions use an OpenAI model to work with collections using Linq style methods.
+
+| Extension | Description | 
+| ----------| ------------|
+| ***.Where()*** | Filter the collection of items by using a model. filter |
+| ***.Select()*** | transform the item into another format using a model. |
+| ***.Remove()*** | Remove items from a collection of items by using a model. filter |
+| ***.Summarize()*** | Create a summarization for each item by using a model. |
+| ***.Classify()*** | classify each item using a model. |
+| ***.Answer()*** | get the answer to a question for each item using a model. |
+
+## Examples
+
+### .Classify() items
+This allows you to classify each item using a model;
+```csharp
+enum Genres { Rock, Pop, Electronica, Country, Classical };
+var classifiedItems = items.Classify<Genres>(model);
+```
+
+### .Where()/.Remove() items
+Filter a collection using natural language
+```csharp
+var breadboxItems = items.Where(model, "item would fit in a bread box");
+var bigItems = items.Remove(model, "item would fit in a bread box");
+```
+
+### .Select() items
+.Select() let's you transform the source into target using an OpenAI model.
+
+#### Object transformation
+You can use it to transform an object from one format to another by simply giving the types. It will use model. to do the transformation.
+```csharp
+var targetItems = items.Select<SourceItem,TargetItem>(model")
+```
+
+#### String transformation
+```chsarp
+var markdownItems = items.Select(model, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
+```
+
+### .Summarize() items
+Generate text summary for each item using an OpenAI model.
 
 ```chsarp
-var summaries= items.Summarize(openAI)
+var summaries = items.Summarize(model);
 ```
 
 You can control the summarization with a hint
 ```csharp
-var summaries = items.Summarize(openAI, "genreate a 3 paragraph summary");
+var summaries = items.Summarize(model, "generate a 3 word summary");
 ```
 
-## .Answer()
+### .Answer() items
 This operator let's you ask a question for each item in a collection.
 ```csharp
-var answers = items.Answer(openAI, "What is total cost of the item as a float?").Select(answer => Convert.ToFloat(answer));
+var answers = items.Answer(model, "What is total cost of the item as a float?").Select(answer => Convert.ToFloat(answer));
 ```
 
-# Chaining operations
-Linq.AI operations and normal linq operations can be mixed together.
-```csharp
-var populations = items.Select<SourceT, TargetT>(openAI)
-	.Summarize(openAI)
-	.Answer(openAI, "What is the population?")
-	.Select(answer => Convert.ToInt32(answer));
-```

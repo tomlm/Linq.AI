@@ -14,15 +14,42 @@ namespace Linq.AI.OpenAI
         public string? Summary { get; set; }
     }
 
-    internal class SummarizationItem<ItemT> : Summarization
-    {
-        public ItemT? Item { get; set; }
-
-        public int? Index { get; set; }
-    }
-
     public static class SummarizeExtension
     {
+        /// <summary>
+        /// Summarize the text
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="chatClient"></param>
+        /// <param name="goal"></param>
+        /// <param name="instructions"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async static Task<string> Summarize(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        {
+            var schema = StructuredSchemaGenerator.FromType<Summarization>().ToString();
+            var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "summarize", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
+            ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
+            var systemChatMessage = GetSystemPrompt(goal ?? "summarize", instructions);
+            var itemMessage = GetItemPrompt(text!);
+            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+            return chatCompletion.Content.Select(completion =>
+            {
+                if (Debugger.IsAttached)
+                {
+                    lock (model)
+                    {
+                        Debug.WriteLine("===============================================");
+                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                        Debug.WriteLine(itemMessage.Content.Single().Text);
+                        Debug.WriteLine(completion.Text);
+                    }
+                }
+                var result = JsonConvert.DeserializeObject<Summarization>(completion.Text)!;
+                return result.Summary;
+            }).Single()!;
+        }
+
         /// <summary>
         /// Filter each item in the list using a LLM query
         /// </summary>
@@ -34,37 +61,13 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<string> Summarize<SourceT>(this IEnumerable<SourceT> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<string> Summarize<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-
-            var schema = StructuredSchemaGenerator.FromType<Summarization>().ToString();
-
-            var count = source.Count();
-
             return source.SelectParallelAsync(async (item, index) =>
             {
-                var itemResult = item;
-                var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "summarize", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
-                ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
-                var systemChatMessage = GetSystemPrompt(goal ?? "summarize", instructions);
-                var itemMessage = GetItemPrompt(itemResult!);
-                ChatCompletion chatCompletion = await chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options);
-                return chatCompletion.Content.Select(completion =>
-                {
-                    if (Debugger.IsAttached)
-                    {
-                        lock (source)
-                        {
-                            Debug.WriteLine("===============================================");
-                            Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                            Debug.WriteLine(itemMessage.Content.Single().Text);
-                            Debug.WriteLine(completion.Text);
-                        }
-                    }
-                    var result = JsonConvert.DeserializeObject<SummarizationItem<SourceT>>(completion.Text)!;
-                    return result.Summary;
-                }).Single()!;
-            }, maxParallel: maxParallel ?? int.MaxValue);
+                var text = item is string ? item as string : JsonConvert.SerializeObject(item).ToString();
+                return await text!.Summarize(model, goal, instructions, cancellationToken);
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 
         private static SystemChatMessage GetSystemPrompt(string goal, string? instructions = null)
@@ -85,12 +88,8 @@ namespace Linq.AI.OpenAI
                     """);
         }
 
-        private static UserChatMessage GetItemPrompt(object item)
+        private static UserChatMessage GetItemPrompt(string item)
         {
-            if (!(item is string))
-            {
-                item = JToken.FromObject(item).ToString();
-            }
             return new UserChatMessage($"""
             <ITEM>
             {item}

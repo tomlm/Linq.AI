@@ -18,15 +18,23 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
+        public async Task String_Summarize()
+        {
+            var summarization = await Text.Summarize(Model, "2 words");
+            Assert.IsTrue(summarization.Contains("Hope"));
+            Assert.IsTrue(summarization.Contains("Change"));
+        }
+
+        [TestMethod]
         public void Summarize_Strings()
         {
             var docs = GetDocs();
-            foreach (var result in docs.Summarize(ChatClient))
+            foreach (var result in docs.Summarize(Model))
             {
                 Assert.IsNotNull(result);
             }
 
-            foreach (var result in docs.Summarize(ChatClient, "Create a 3 bullet summary"))
+            foreach (var result in docs.Summarize(Model, "Create a 3 bullet summary"))
             {
                 Assert.IsNotNull(result);
             }
@@ -36,7 +44,7 @@ namespace Linq.AI.OpenAI.Tests
         public void Summarize_Objects()
         {
             var docs = GetDocs().Select(markdown => new TestObject() { Item = markdown }).ToList();
-            foreach (var result in docs.Summarize(ChatClient))
+            foreach (var result in docs.Summarize(Model))
             {
                 Assert.IsNotNull(result);
             }

@@ -25,9 +25,9 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<string> Select(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<string> Select(this IEnumerable<string> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.Select<string, SelectItem<string>>(chatClient, goal, instructions, maxParallel, cancellationToken)
+            return source.Select<string, SelectItem<string>>(model, goal, instructions, maxParallel, cancellationToken)
                         .Select(s => s.Result!);
         }
 
@@ -42,9 +42,9 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IEnumerable<ResultT> Select<ResultT>(this IEnumerable<string> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<ResultT> Select<ResultT>(this IEnumerable<string> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.Select<string, ResultT>(chatClient, goal, instructions, maxParallel, cancellationToken);
+            return source.Select<string, ResultT>(model, goal, instructions, maxParallel, cancellationToken);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<ResultT> Select<SourceT, ResultT>(this IEnumerable<SourceT> source, ChatClient chatClient, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<ResultT> Select<SourceT, ResultT>(this IEnumerable<SourceT> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<ResultT>().ToString();
 
@@ -71,7 +71,7 @@ namespace Linq.AI.OpenAI
                 ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
                 var systemChatMessage = GetSystemPrompt(goal ?? "transform the item to the output schema", schema, instructions);
                 var itemMessage = GetItemPrompt(itemResult!, index, count);
-                ChatCompletion chatCompletion = await chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options);
+                ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
                 return chatCompletion.Content.Select(completion =>
                 {
                     if (Debugger.IsAttached)
@@ -87,7 +87,7 @@ namespace Linq.AI.OpenAI
                     }
                     return JsonConvert.DeserializeObject<ResultT>(completion.Text)!;
                 }).Single()!;
-            }, maxParallel: maxParallel ?? int.MaxValue);
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 
         private static SystemChatMessage GetSystemPrompt(string goal, string schema, string? instructions = null)

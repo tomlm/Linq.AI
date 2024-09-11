@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using OpenAI.Chat;
+using System;
 using System.Diagnostics;
 
 namespace Linq.AI.OpenAI
@@ -16,13 +17,43 @@ namespace Linq.AI.OpenAI
         public bool Matches { get; set; }
     }
 
-    internal class WhereItem<T> : WhereItem
-    {
-        public T? Item { get; set; }
-    }
-
     public static class WhereExtension
     {
+        /// <summary>
+        /// Returns true/false based on weather it matches the constraint
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="chatClient"></param>
+        /// <param name="constraint"></param>
+        /// <param name="instructions"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async static Task<bool> Matches(this string text, ChatClient model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
+        {
+            var schema = StructuredSchemaGenerator.FromType<WhereItem>().ToString();
+            var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Where", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
+            ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
+            var systemChatMessage = GetSystemPrompt(constraint, instructions);
+            var itemMessage = GetItemPrompt(text);
+            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+            return chatCompletion.Content.Select(completion =>
+            {
+                if (Debugger.IsAttached)
+                {
+                    lock (model)
+                    {
+                        Debug.WriteLine("===============================================");
+                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                        Debug.WriteLine(itemMessage.Content.Single().Text);
+                        Debug.WriteLine(completion.Text);
+                    }
+                }
+                var result = JsonConvert.DeserializeObject<WhereItem>(completion.Text)!;
+                return result.Matches;
+            }).Single()!;
+        }
+
+
         /// <summary>
         /// Classify each item in list
         /// </summary>
@@ -34,40 +65,13 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">parallezation</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
-        public static IEnumerable<T> Where<T>(this IEnumerable<T> source, ChatClient chatClient, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IEnumerable<T> Where<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            // TODO get this from someplace...
-            var schema = StructuredSchemaGenerator.FromType<WhereItem>().ToString();
-
-            var count = source.Count();
-
-            return source.SelectParallelAsync(async (item, index) =>
-                {
-                    var itemResult = item;
-                    var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Where", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
-                    ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
-                    var systemChatMessage = GetSystemPrompt(goal, instructions);
-                    var itemMessage = GetItemPrompt(itemResult!, index, count);
-                    ChatCompletion chatCompletion = await chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options);
-                    return chatCompletion.Content.Select(completion =>
-                    {
-                        if (Debugger.IsAttached)
-                        {
-                            lock (source)
-                            {
-                                Debug.WriteLine("===============================================");
-                                Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                                Debug.WriteLine(itemMessage.Content.Single().Text);
-                                Debug.WriteLine(completion.Text);
-                            }
-                        }
-                        var result = JsonConvert.DeserializeObject<WhereItem<T>>(completion.Text)!;
-                        result.Item = itemResult;
-                        return result;
-                    }).Single()!;
-                }, maxParallel: maxParallel ?? int.MaxValue)
-                .Where(result => result.Matches)
-                .Select(result => result.Item!);
+            return source.WhereParallelAsync(async (item, index) =>
+            {
+                var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
+                return await text!.Matches(model, goal, instructions, cancellationToken);
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 
         private static SystemChatMessage GetSystemPrompt(string goal, string? instructions = null)
@@ -87,19 +91,11 @@ namespace Linq.AI.OpenAI
                 """);
         }
 
-        private static UserChatMessage GetItemPrompt(object item, int index, int length)
+        private static UserChatMessage GetItemPrompt(string item)
         {
-            if (!(item is string))
-            {
-                item = JToken.FromObject(item).ToString();
-            }
             return new UserChatMessage($"""
-            <INDEX>
-            {index} of {length}
-
             <ITEM>
             {item}
-            
             """);
         }
     }

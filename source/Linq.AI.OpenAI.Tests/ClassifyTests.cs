@@ -1,18 +1,34 @@
+
 namespace Linq.AI.OpenAI.Tests
 {
 
-    public enum Categories { Car, Bike, Train, Plane };
-    
+    public enum TestCategories { Car, Bike, Train, Plane };
+
     [TestClass]
     public class ClassifyTests : UnitTestBase
     {
+        public static string[] Categories = ["Car", "Bike", "Train", "Plane"];
+
         [TestMethod]
-        public void Classify_Strings()
+        public async Task Classify_Text_Enum()
+        {
+            var result = await "Ford".Classify<TestCategories>(Model);
+            Assert.AreEqual(TestCategories.Car, result);
+        }
+
+        [TestMethod]
+        public async Task Classifiy_Text_Strings()
+        {
+            var result = await "Ford".Classify(Model, Categories);
+            Assert.AreEqual("Car", result);
+        }
+
+        [TestMethod]
+        public void Classify_Collection_Strings()
         {
             string[] items = ["Super hornet", "Orient Express", "Ford", "puch"];
-            string[] categories = ["Car", "Bike", "Train", "Plane"];
 
-            foreach (var result in items.Classify(ChatClient, categories))
+            foreach (var result in items.Classify(Model, Categories))
             {
                 switch (result.Item)
                 {
@@ -33,12 +49,11 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Classify_Objects()
+        public void Classify_Collection_Objects()
         {
             string[] items = ["Super hornet", "Orient Express", "nash", "puch"];
-            string[] categories = ["Car", "Bike", "Train", "Plane"];
 
-            foreach (var result in items.Select(name => new TestObject() { Item = name }).Classify(ChatClient, categories))
+            foreach (var result in items.Select(name => new TestObject() { Item = name }).Classify(Model, Categories))
             {
                 switch (result.Item.Item)
                 {
@@ -60,25 +75,25 @@ namespace Linq.AI.OpenAI.Tests
 
 
         [TestMethod]
-        public void Classify_Enum()
+        public void Classify_Collection_Enum()
         {
             string[] items = ["Super hornet", "Orient Express", "Ford", "puch"];
 
-            foreach (var result in items.Classify<Categories>(ChatClient))
+            foreach (var result in items.Classify<TestCategories>(Model))
             {
                 switch (result.Item)
                 {
                     case "Super hornet":
-                        Assert.AreEqual(Categories.Plane, result.Category);
+                        Assert.AreEqual(TestCategories.Plane, result.Category);
                         break;
                     case "Orient Express":
-                        Assert.AreEqual(Categories.Train, result.Category);
+                        Assert.AreEqual(TestCategories.Train, result.Category);
                         break;
                     case "Ford":
-                        Assert.AreEqual(Categories.Car, result.Category);
+                        Assert.AreEqual(TestCategories.Car, result.Category);
                         break;
                     case "puch":
-                        Assert.AreEqual(Categories.Bike, result.Category);
+                        Assert.AreEqual(TestCategories.Bike, result.Category);
                         break;
                 }
             }
@@ -126,7 +141,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Hip Hop - Music that features rap and a strong rhythmic beat"
             ];
 
-            var results = artists.Classify(ChatClient, categories, "Identify the genre of each artist from the list.").ToList();
+            var results = artists.Classify(Model, categories, "Identify the genre of each artist from the list.").ToList();
 
             Assert.AreEqual("Pop", results.Single(result => result.Item == "Ed Sheeran").Category);
             Assert.AreEqual("Rock", results.Single(result => result.Item == "Queen").Category);
