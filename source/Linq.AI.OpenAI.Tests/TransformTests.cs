@@ -12,9 +12,9 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_String2String()
         {
-            var source = "This is a test.";
+            var source = "My name is Tom.";
             var transformation = await source.TransformItemAsync<string>(Model, "into spanish");
-            Assert.AreEqual("Esto es una prueba.", transformation!);
+            Assert.AreEqual("Me llamo Tom.", transformation!);
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Object2Object()
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
-            var obj = await source.TransformItemAsync<TestObject>(Model);
+            var obj = await source.TransformItemAsync<TestObject>(Model, instructions: "Do not fill in properties that you don't have data for.");
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(0, obj.Count);
         }

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace Linq.AI.OpenAI
@@ -14,10 +15,10 @@ namespace Linq.AI.OpenAI
 
         public static JObject FromType(Type type)
         {
-            return GetSchema(type);
+            return GetSchema(type, true);
         }
 
-        private static JObject GetSchema(Type type)
+        private static JObject GetSchema(Type type, bool isRequired)
         {
             var schema = new JObject();
 
@@ -58,7 +59,7 @@ namespace Linq.AI.OpenAI
             {
                 schema["type"] = "array";
                 var itemType = type.IsArray ? type.GetElementType() : type.GetGenericArguments()[0];
-                schema["items"] = GetSchema(itemType!);
+                schema["items"] = GetSchema(itemType!, true);
             }
             else if (type.IsEnum)
             {
@@ -77,13 +78,19 @@ namespace Linq.AI.OpenAI
                 var propertiesSchema = new JObject();
                 foreach (var prop in props)
                 {
-                    propertiesSchema[prop.Name] = GetSchema(prop.PropertyType);
+                    bool propRequired = prop.GetCustomAttribute<RequiredAttribute>() != null;
+
+                    propertiesSchema[prop.Name] = GetSchema(prop.PropertyType, propRequired);
                     var descr = prop.GetCustomAttribute<DescriptionAttribute>();
                     if (descr != null)
                         propertiesSchema[prop.Name]!["description"] = descr.Description;
                 }
                 schema["properties"] = propertiesSchema;
-
+            }
+            if (nullableType != null || !type.IsValueType)
+            {
+                if (!isRequired)
+                    schema["type"] = new JArray() { schema["type"], "null" };
             }
 
             return schema;

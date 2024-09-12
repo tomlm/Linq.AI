@@ -18,6 +18,12 @@ namespace Linq.AI.OpenAI
 
     public static class TransformExtension
     {
+        private static JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            MissingMemberHandling = MissingMemberHandling.Ignore
+        };
+
         /// <summary>
         /// Transform text using OpenAI model
         /// </summary>
@@ -46,7 +52,7 @@ namespace Linq.AI.OpenAI
                     Debug.WriteLine(completion.Text);
                 }
 #endif
-                var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text)!;
+                var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text, JsonSettings)!;
                 return transformation.Result!;
             }).Single()!;
         }
@@ -86,7 +92,7 @@ namespace Linq.AI.OpenAI
                         Debug.WriteLine(completion.Text);
                     }
 #endif
-                    var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text)!;
+                    var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text, JsonSettings)!;
                     return transformation.Result;
                 }).Single()!;
             }, maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken);
