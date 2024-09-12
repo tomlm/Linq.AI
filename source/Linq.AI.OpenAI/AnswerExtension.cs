@@ -18,14 +18,14 @@ namespace Linq.AI.OpenAI
     public static class AnswerExtension
     {
         /// <summary>
-        /// Answer a question about the text
+        /// Answer a question about the text using a OpenAI model
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="chatClient"></param>
-        /// <param name="question"></param>
-        /// <param name="instructions"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="text">text to inspect</param>
+        /// <param name="model">ChatClient for model</param>
+        /// <param name="question">question you want answered</param>
+        /// <param name="instructions">system instructions to help control the answer</param>
+        /// <param name="cancellationToken">cancellation token to cancel the operation.</param>
+        /// <returns>answer of question</returns>
         public async static Task<string> AnswerAsync(this string text, ChatClient model, string question, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<AnswerItem>().ToString();
@@ -33,7 +33,7 @@ namespace Linq.AI.OpenAI
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
             var systemChatMessage = GetSystemPrompt(text!, instructions);
             var itemMessage = Utils.GetItemPrompt(question);
-            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options, cancellationToken: cancellationToken);
             return chatCompletion.Content.Select(completion =>
             {
 #if DEBUG
@@ -51,23 +51,23 @@ namespace Linq.AI.OpenAI
 
 
         /// <summary>
-        /// Answer a question about the item.
+        /// Answer a question about each item in a collection using an AI Model
         /// </summary>
         /// <typeparam name="SourceT">type of the item</typeparam>
         /// <param name="source">collection of items</param>
-        /// <param name="chatClient"></param>
-        /// <param name="question">question to ask</param>
-        /// <param name="instructions"></param>
-        /// <param name="maxParallel"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="model">model to use</param>
+        /// <param name="question">question to ask about each item</param>
+        /// <param name="instructions">system instructions to extend system prompt</param>
+        /// <param name="maxParallel">max parallelization to use</param>
+        /// <param name="cancellationToken">cancellation token</param>
         /// <returns></returns>
         public static IList<string> Answer<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.SelectParallelAsync(async (item, index) =>
+            return source.SelectParallelAsync(async (item, index, ct) =>
             {
                 var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
                 return await text!.AnswerAsync(model, question, instructions, cancellationToken);
-            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2, cancellationToken: cancellationToken);
         }
 
         private static SystemChatMessage GetSystemPrompt(string context, string? instructions = null)

@@ -17,14 +17,14 @@ namespace Linq.AI.OpenAI
     public static class SummarizeExtension
     {
         /// <summary>
-        /// Summarize the text
+        /// Summarize text using OpenAI model
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="chatClient"></param>
-        /// <param name="goal"></param>
-        /// <param name="instructions"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="text">text to summarize</param>
+        /// <param name="model">ChatClient to use as model</param>
+        /// <param name="goal">(OPTIONAL) Goal for how you want to summarize</param>
+        /// <param name="instructions">(OPTIONAL) extends system prompt</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Summarization text</returns>
         public async static Task<string> SummarizeAsync(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Summarization>().ToString();
@@ -32,7 +32,7 @@ namespace Linq.AI.OpenAI
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
             var systemChatMessage = GetSystemPrompt(goal ?? "summarize", instructions);
             var itemMessage = Utils.GetItemPrompt(text!);
-            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options, cancellationToken: cancellationToken);
             return chatCompletion.Content.Select(completion =>
             {
 #if DEBUG
@@ -50,23 +50,37 @@ namespace Linq.AI.OpenAI
         }
 
         /// <summary>
-        /// Filter each item in the list using a LLM query
+        /// Summarize a collection of text using OpenAI model
         /// </summary>
-        /// <typeparam name="SourceT"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="goal">The goal</param>
-        /// <param name="categories">the categories</param>
-        /// <param name="instructions">additional instructions</param>
-        /// <param name="maxParallel">parallezation</param>
-        /// <param name="cancellationToken">cancellation token</param>
-        /// <returns></returns>
+        /// <param name="source">source collection of text</param>
+        /// <param name="model">ChatClient to use as model</param>
+        /// <param name="goal">(OPTIONAL) Goal for how you want to summarize</param>
+        /// <param name="instructions">(OPTIONAL) extends system prompt</param>
+        /// <param name="maxParallel">(OPTIONAL) control how many concurrent tasks are executed</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>collection of summerization text</returns>
+        public static IList<string> Summarize(this IEnumerable<string> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        {
+            return source.Summarize<string>(model, goal, instructions, maxParallel, cancellationToken);
+        }
+        /// <summary>
+        /// Summarize a collection of objects using OpenAI model
+        /// </summary>
+        /// <typeparam name="SourceT">source type</typeparam>
+        /// <param name="source">source collection</param>
+        /// <param name="model">ChatClient to use as model</param>
+        /// <param name="goal">(OPTIONAL) Goal for how you want to summarize</param>
+        /// <param name="instructions">(OPTIONAL) extends system prompt</param>
+        /// <param name="maxParallel">(OPTIONAL) control how many concurrent tasks are executed</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>collection of summerization text</returns>
         public static IList<string> Summarize<SourceT>(this IEnumerable<SourceT> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.SelectParallelAsync(async (item, index) =>
+            return source.SelectParallelAsync(async (item, index, ct) =>
             {
                 var text = item is string ? item as string : JsonConvert.SerializeObject(item).ToString();
-                return await text!.SummarizeAsync(model, goal, instructions, cancellationToken);
-            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
+                return await text!.SummarizeAsync(model, goal, instructions, ct);
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2, cancellationToken: cancellationToken);
         }
 
         private static SystemChatMessage GetSystemPrompt(string goal, string? instructions = null)

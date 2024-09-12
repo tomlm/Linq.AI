@@ -22,22 +22,22 @@ namespace Linq.AI.OpenAI
     public static class WhereExtension
     {
         /// <summary>
-        /// Returns true/false based on weather it matches the constraint
+        /// Determine if text matches goal
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="chatClient"></param>
-        /// <param name="constraint"></param>
-        /// <param name="instructions"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async static Task<bool> MatchesAsync(this string text, ChatClient model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
+        /// <param name="text">text to inspect</param>
+        /// <param name="model">ChatClient to use for model</param>
+        /// <param name="goal">goal for matching</param>
+        /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>true/false</returns>
+        public async static Task<bool> MatchesAsync(this string text, ChatClient model, string goal, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<WhereItem>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Where", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
-            var systemChatMessage = GetSystemPrompt(constraint, instructions);
+            var systemChatMessage = GetSystemPrompt(goal, instructions);
             var itemMessage = Utils.GetItemPrompt(text, 0, 1);
-            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options, cancellationToken: cancellationToken);
             return chatCompletion.Content.Select(completion =>
             {
 #if DEBUG
@@ -56,28 +56,28 @@ namespace Linq.AI.OpenAI
 
 
         /// <summary>
-        /// Classify each item in list
+        /// Determine if items matches goal
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="goal">The goal</param>
-        /// <param name="categories">the categories</param>
-        /// <param name="instructions">additional instructions</param>
-        /// <param name="maxParallel">parallezation</param>
+        /// <typeparam name="T">type of enumerable</typeparam>
+        /// <param name="source">source collection of objects</param>
+        /// <param name="model">ChatClient to use for model</param>
+        /// <param name="goal">goal for matching</param>
+        /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
+        /// <param name="maxParallel">(OPTIONAL) controls number of concurrent tasks executed</param>
         /// <param name="cancellationToken">cancellation token</param>
-        /// <returns></returns>
+        /// <returns>collection of objects that match the goal</returns>
         public static IList<T> Where<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             var count = source.Count();
 
-            return source.WhereParallelAsync(async (item, index) =>
+            return source.WhereParallelAsync(async (item, index, ct) =>
             {
                 var schema = StructuredSchemaGenerator.FromType<WhereItem>().ToString();
                 var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Where", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
                 ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
                 var systemChatMessage = GetSystemPrompt(goal, instructions);
-                var itemMessage = Utils.GetItemPrompt(item, index, count);
-                ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+                var itemMessage = Utils.GetItemPrompt(item!, index, count);
+                ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options, cancellationToken);
                 return chatCompletion.Content.Select(completion =>
                 {
 #if DEBUG
@@ -92,7 +92,7 @@ namespace Linq.AI.OpenAI
                     var result = JsonConvert.DeserializeObject<WhereItem>(completion.Text)!;
                     return result.Matches;
                 }).Single()!;
-            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
+            }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2, cancellationToken: cancellationToken);
         }
 
         private static SystemChatMessage GetSystemPrompt(string goal, string? instructions = null)

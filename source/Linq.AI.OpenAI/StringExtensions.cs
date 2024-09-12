@@ -19,16 +19,16 @@ namespace Linq.AI.OpenAI
 
     public static class StringExtensions
     {
-        /// Extract all items that match the goal
+        /// <summary>
+        /// Transform text into collection of objects into objects using OpenAI model
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="goal">The goal</param>
-        /// <param name="categories">the categories</param>
-        /// <param name="instructions">additional instructions</param>
-        /// <param name="maxParallel">parallezation</param>
+        /// <typeparam name="T">the type of result</typeparam>
+        /// <param name="text">source text</param>
+        /// <param name="model">ChatClient model</param>
+        /// <param name="goal">(OPTIONAL) The goal describing the transformation desired</param>
+        /// <param name="instructions">(OPTIONAL) extend system instructions</param>
         /// <param name="cancellationToken">cancellation token</param>
-        /// <returns></returns>
+        /// <returns>collection of objects found in text</returns>
         public static async Task<IList<T>> SelectAsync<T>(this string text, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Extraction<T>>().ToString();
@@ -37,7 +37,7 @@ namespace Linq.AI.OpenAI
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
             var systemChatMessage = GetSystemPrompt(goal ?? "extract objects from the text", instructions);
             var itemMessage = Utils.GetItemPrompt(text);
-            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+            ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options, cancellationToken: cancellationToken);
 #if DEBUG
             Debug.WriteLine("===============================================");
             Debug.WriteLine(systemChatMessage.Content.Single().Text);

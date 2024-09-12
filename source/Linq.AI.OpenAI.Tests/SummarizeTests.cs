@@ -15,7 +15,7 @@ namespace Linq.AI.OpenAI.Tests
                 "https://raw.githubusercontent.com/tomlm/Crazor/main/docs/CardView.md"
             ];
             HttpClient httpClient = new HttpClient();
-            return urls.SelectParallelAsync(async (url, i) => await httpClient.GetStringAsync(url));
+            return urls.SelectParallelAsync(async (url, i, ct) => await httpClient.GetStringAsync(url, ct));
         }
 
         [TestMethod]
