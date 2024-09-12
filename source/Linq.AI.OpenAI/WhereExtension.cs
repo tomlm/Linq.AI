@@ -39,10 +39,8 @@ namespace Linq.AI.OpenAI
         public static IList<T> Where<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             var count = source.Count();
-            return source.WhereParallelAsync((item, index, ct) =>
-                {
-                    return item!.MatchesAsync(model, goal, TransformExtension.GetItemIndexClause(index, count, instructions), cancellationToken);
-                }, maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken: cancellationToken);
+            return source.WhereParallelAsync((item, index, ct) => item!.MatchesAsync(model, goal, TransformExtension.GetItemIndexClause(index, count, instructions), cancellationToken), 
+                maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken: cancellationToken);
         }
     }
 }

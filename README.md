@@ -15,7 +15,7 @@ var model = new ChatClient(model: "gpt-4o-mini", "<modelKey>");
 ```
 > NOTE: The model must support structured output.
 
-# String Extensions
+# Object Extensions
 These extensions use an OpenAI model to work with text.
 
 | Extension | Description | 
@@ -26,35 +26,34 @@ These extensions use an OpenAI model to work with text.
 | ***.AnswerAsync()*** | get the answer to a question from the text using a model. |
 | ***.SelectAsync()*** | Generate a collection of items from the text using a model. |
 
-## Examples
-
-### .Classify() text
+## Object .Classify() 
 
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classification = await text.ClassifyAsync<Genres>(model);
+var classification = await item.ClassifyAsync<Genres>(model);
 ```
 
-### .Summarize() text
+## item.Summarize() 
 
 ```csharp
-var summary = await text.SummarizeAsync(model, "with 3 words");
+var summary = await item.SummarizeAsync(model, "with 3 words");
 ```
 
-### .Matches() text
+## item.Matches() 
 
 ```csharp
-if (await text.MatchesAsync(model, "there is date"))
+if (await item.MatchesAsync(model, "there is date"))
   ...
 ```
 
-### .Answer() text
+## item.Answer() 
 
 ```csharp
 var summary = await text.AnswerAsync(model, "what is the birthday?");
 ```
 
-### .Select() text
+## item.Select() 
+Select pulls a collection of items from the source.
 
 Example using model to select 
 ```csharp
@@ -71,7 +70,7 @@ public class HREF
 var summary = await text.SelectAsync<HREF>(model);
 ```
 
-# Collection Extensions 
+# Linq Extensions 
 These collection extensions use an OpenAI model to work with collections using Linq style methods.
 
 | Extension | Description | 
@@ -85,37 +84,34 @@ These collection extensions use an OpenAI model to work with collections using L
 
 > NOTE: These methods are synchronous linq methods, but internally they run all of the AI calls as throttled parallel background tasks.
 
-## Examples
-
-### .Classify() items
+## enumerable.Classify() 
 This allows you to classify each item using a model;
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
 var classifiedItems = items.Classify<Genres>(model);
 ```
 
-### .Where()/.Remove() items
+## enumerable.Where()/enumerable.Remove() 
 Filter a collection using natural language
 ```csharp
 var breadboxItems = items.Where(model, "item would fit in a bread box");
 var bigItems = items.Remove(model, "item would fit in a bread box");
 ```
 
-### .Select() items
+## enumerable.Select() 
 .Select() let's you transform the source into target using an OpenAI model.
 
-#### Object transformation
-You can use it to transform an object from one format to another by simply giving the types. It will use model. to do the transformation.
+You can use it to transform an object from one format to another by simply giving the types. It will use model to do the transformation.
 ```csharp
 var targetItems = items.Select<SourceItem,TargetItem>(model)
 ```
 
-#### String transformation
-```chsarp
+You can use it to transform a collection of text 
+```csharp
 var markdownItems = items.Select(model, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
 ```
 
-### .Summarize() items
+## enumerable.Summarize() 
 Generate text summary for each item using an OpenAI model.
 
 ```chsarp
@@ -127,9 +123,33 @@ You can control the summarization with a hint
 var summaries = items.Summarize(model, "generate a 3 word summary");
 ```
 
-### .Answer() items
+## enumerable.Answer() 
 This operator let's you ask a question for each item in a collection.
 ```csharp
-var answers = items.Answer(model, "What is total cost of the item as a float?").Select(answer => Convert.ToFloat(answer));
+var answers = items.Answer<float>(model, "What is the cost?");
 ```
 
+# Defining new operators
+All of these operators are built up of 2 core operators
+* ***TransformItemAsync()*** - which allows you to give a transformation goal and instructions for a single item.
+* ***TransformItems()*** - Which allows you a transformation goal and instructions for each element in a enumerable collection.
+
+To create a custom operator you create an static class and define static methods for transforming an object or collection of objects.
+
+For example, here is the implementation of Summarize():
+
+* The ***SummarizeAsync()*** method defines object operator which calls **TransformItemAsync** with a default goal of "Create a summarization" with result type of string.
+* The ***Summarize()*** method defines a collection operator which calls **TransformItems** with a default goal of "Create a summarization" with result type for each item in the collection of string.
+
+```csharp
+    public static class SummarizeExtension
+    {
+        // Object operator
+        public static Task<string> SummarizeAsync(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => source.TransformItemAsync<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
+
+        // collection operator
+        public static IList<string> Summarize(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+            => source.TransformItems<string>(model, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
+    }
+```

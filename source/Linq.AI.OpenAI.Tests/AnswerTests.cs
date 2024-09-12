@@ -67,8 +67,8 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Answer()
         {
-            var answer = await Text.AnswerAsync<int>(Model, "what year was obama born");
-            Assert.AreEqual(1961, answer);
+            var answer = await Text.AnswerAsync(Model, "what city was obama born");
+            Assert.AreEqual("honolulu", answer.ToLower());
         }
 
         [TestMethod]

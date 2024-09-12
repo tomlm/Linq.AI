@@ -22,7 +22,7 @@ namespace Linq.AI.OpenAI
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Summarization text</returns>
         public static Task<string> SummarizeAsync(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItemAsync<string>(model, goal ?? "summarize", instructions, cancellationToken);
+            => source.TransformItemAsync<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
 
         /// <summary>
         /// Summarize each element in a collection using OpenAI model
@@ -35,7 +35,7 @@ namespace Linq.AI.OpenAI
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>collection of summerization text</returns>
         public static IList<string> Summarize(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
-            => source.TransformItems<string>(model, goal ?? "summarize", instructions, maxParallel, cancellationToken);
+            => source.TransformItems<string>(model, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
     }
 }
 
