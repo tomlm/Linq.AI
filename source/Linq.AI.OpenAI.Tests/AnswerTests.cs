@@ -67,14 +67,14 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Answer()
         {
-            var answer = await Text.AnswerAsync(Model, "what year was obama born");
-            Assert.AreEqual(1961, int.Parse(answer));
+            var answer = await Text.AnswerAsync<int>(Model, "what year was obama born");
+            Assert.AreEqual(1961, answer);
         }
 
         [TestMethod]
         public void Answer_Collection_Objects()
         {
-            var results = Forecast.Answer(Model, "What is the temperature difference as an integer?").Select(text => int.Parse(text)).ToList();
+            var results = Forecast.Answer<int>(Model, "What is the temperature difference as an integer?");
             for(int i=0; i < Forecast.Count;i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);
@@ -86,7 +86,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             var results = Forecast
                 .Summarize(Model)
-                .Answer(Model, "What is the temperature difference as an integer with no units?").Select(text => int.Parse(text)).ToList();
+                .Answer<int>(Model, "What is the temperature difference as an integer with no units?");
             for (int i = 0; i < Forecast.Count; i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);

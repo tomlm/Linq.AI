@@ -1,5 +1,6 @@
 using System.Diagnostics;
 
+
 namespace Linq.AI.OpenAI.Tests
 {
     public class Card
@@ -43,7 +44,7 @@ namespace Linq.AI.OpenAI.Tests
                 }
                 """;
             var cards = (await Text.SelectAsync<Card>(Model, "each section"))
-                .Select<Card, string>(Model, goal);
+                .Select<string>(Model, goal);
 
             foreach (var card in cards)
             {
@@ -87,18 +88,32 @@ namespace Linq.AI.OpenAI.Tests
             // Create a list of categories formatted as <genre> - <description>
             string[] categories =
             [
-                "Pop - Popular music that appeals to a wide audience",
-                "Country - Music that originated in the southern United States",
-                "Rock - Music characterized by a strong beat and amplified instruments",
-                "Electronic - Music produced using electronic devices",
-                "Hip Hop - Music that features rap and a strong rhythmic beat"
+                "Pop",
+                "Country",
+                "Rock",
+                "Electronic",
+                "Hip Hop"
             ];
 
-            var results = artists.Classify(Model, categories, "Identify the genre of each artist from the list.").ToList();
+            var results = artists.Classify(Model, categories).ToList();
 
-            Assert.AreEqual("Pop", results.Single(result => result.Item == "Ed Sheeran").Category);
-            Assert.AreEqual("Rock", results.Single(result => result.Item == "Queen").Category);
+            Assert.AreEqual("Pop", results.Single(result => (string)result.Item == "Ed Sheeran").Category);
+            Assert.AreEqual("Rock", results.Single(result => (string)result.Item == "Queen").Category);
         }
 
+        public enum MusicTypes { Pop, Country, Rock, Electronica, HipHop };
     }
+
+    public class Arguments
+    {
+        [System.ComponentModel.Description("amount of parallezation")]
+        public int MaxParallel { get; set; }
+
+        [System.ComponentModel.Description("the project or solution file to operate on. If a file is not specified, the command will search the current directory for one.")]
+        public string? Project { get; set; }
+
+        [System.ComponentModel.Description()]
+        public bool NoRestore { get; set; }
+    }
+
 }

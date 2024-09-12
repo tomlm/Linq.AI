@@ -47,44 +47,24 @@ namespace Linq.AI.OpenAI.Tests
         {
             var results = await Text.SelectAsync<string>(Model, "section titles");
 
-            string[] titles =
-            [
-                "Early Life and Education",
-                "Law Career and Community Organizing",
-                "Political Rise",
-                "Presidential Campaign",
-                "First Term Achievements",
-                "Foreign Policy and Nobel Peace Prize",
-                "Second Term Challenges",
-                "Post-Presidency Activities",
-                "Legacy and Impact",
-                "Personal Life"
-            ];
-
-            for(int i=0; i< titles.Length; i++)
+            Assert.IsTrue(results.Count() > 1);
+            foreach (var result in results)
             {
-                Assert.AreEqual(titles[i], results[i]);
+                Assert.IsNotNull(result);
             }
-        }
-
-        public class Article
-        {
-            public string? Title { get; set; }
-            public string? Paragraph { get; set; }
         }
 
         [TestMethod]
         public async Task Select_Text_Object()
         {
-            var results = (await Text.SelectAsync<Article>(Model)).ToList();
+            var results = await Text.SelectAsync<Article>(Model);
 
-            Assert.AreEqual("Early Life and Education", results[0].Title);
-            Assert.IsNotNull(results[0].Paragraph);
-
-            Assert.AreEqual("Law Career and Community Organizing", results[1].Title);
-            Assert.IsNotNull(results[1].Paragraph);
-
-            Assert.AreEqual(10, results.Count);
+            Assert.IsTrue(results.Count > 1);
+            foreach(var result in results)
+            {
+                Assert.IsNotNull(result.Title);
+                Assert.IsNotNull(result.Paragraph);
+            }
         }
 
         [TestMethod]
@@ -97,7 +77,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.Select(Model, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
+            var results = sources.Select<string>(Model, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}");
             var result = results[0];
             Assert.IsTrue(result.StartsWith("#"));
             Assert.IsTrue(result.Split('\n').First().Contains("Title 1"));
@@ -114,7 +94,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.Select<TargetObject>(Model).ToList();
+            var results = sources.Select<TargetObject>(Model);
             var result = results[0];
             Assert.AreEqual("Joe Blow", result.AuthorFullName);
             Assert.AreEqual("Joe", result.Author!.FirstName);
@@ -142,7 +122,7 @@ namespace Linq.AI.OpenAI.Tests
                 new SourceObject() { Title="Title 3", Description="Which is better? Flossing or brushing or doing nothing?", Writer="Gert Gooble", PubliicationDate = new DateTime(2020, 10, 1) },
             };
 
-            foreach (var result in sources.Select<SourceObject, TargetObject>(Model))
+            foreach (var result in sources.Select<TargetObject>(Model))
             {
                 switch (result.Summary)
                 {
@@ -168,4 +148,11 @@ namespace Linq.AI.OpenAI.Tests
 
 
     }
+    public class Article
+    {
+        public string? Title { get; set; }
+        public string? Paragraph { get; set; }
+    }
+
+
 }

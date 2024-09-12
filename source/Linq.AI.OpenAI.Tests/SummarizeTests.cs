@@ -51,7 +51,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Summarize_Objects()
         {
-            var docs = GetDocs().Select(markdown => new TestObject() { Item = markdown }).ToList();
+            var docs = GetDocs().Select(markdown => new TestObject() { Name = markdown }).ToList();
             foreach (var result in docs.Summarize(Model))
             {
                 Debug.WriteLine(result);

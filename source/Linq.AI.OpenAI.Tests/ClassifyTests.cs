@@ -53,9 +53,9 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["Super hornet", "Orient Express", "nash", "puch"];
 
-            foreach (var result in items.Select(name => new TestObject() { Item = name }).Classify(Model, Categories))
+            foreach (var result in items.Select(name => new TestObject() { Name = name }).Classify(Model, Categories))
             {
-                switch (result.Item.Item)
+                switch (result.Item.Name)
                 {
                     case "Super hornet":
                         Assert.AreEqual("Plane", result.Category);

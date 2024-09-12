@@ -2,6 +2,6 @@
 {
     internal class TestObject
     {
-        public object? Item { get; set; }
+        public object? Name { get; set; }
     }
 }

@@ -19,10 +19,13 @@ namespace Linq.AI.OpenAI
         /// <returns>collection of items which didn't match the goal</returns>
         public static IList<T> Remove<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
+            var count = source.Count();
+
             return source.WhereParallelAsync(async (item, index, ct) =>
             {
                 var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
-                return !(await text!.MatchesAsync(model, goal, instructions, ct));
+                var matches = await item!.MatchesAsync(model, goal, TransformExtension.GetItemIndexClause(index, count, instructions), cancellationToken);
+                return !matches;
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2, cancellationToken: cancellationToken);
         }
     }

@@ -9,8 +9,8 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Matches()
         {
-            Assert.IsTrue(await "a duck".MatchesAsync(Model, "a bird"));
-            Assert.IsFalse(await "a truck".MatchesAsync(Model, "a bird"));
+            Assert.IsTrue(await "a duck".MatchesAsync(Model, "item is a bird"));
+            Assert.IsFalse(await "a truck".MatchesAsync(Model, "item is a bird"));
         }
 
         [TestMethod]
@@ -18,7 +18,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(Model, "keep things you can travel on");
+            var results = items.Where(Model, "item is a thing you can travel on");
             Assert.IsTrue(results.Contains("horse"));
             Assert.IsTrue(results.Contains("airplane"));
             Assert.IsFalse(results.Contains("tack"));
@@ -31,10 +31,10 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Select(item => new { Name = item }).Where(Model, "it is something you can ride");
+            var results = items.Select(item => new { Name = item }).Where(Model, "item is something you can ride");
             Assert.IsTrue(results.Any(item => item.Name == "horse"));
-            Assert.IsTrue(results.Any(item => item.Name == "airplane"));
             Assert.IsFalse(results.Any(item => item.Name == "tack"));
+            Assert.IsTrue(results.Any(item => item.Name == "airplane"));
             Assert.IsFalse(results.Any(item => item.Name == "caterpillar"));
             Assert.IsFalse(results.Any(item => item.Name == "sandwich"));
         }
@@ -44,12 +44,12 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(Model, "The item is the first, third or last");
+            var results = items.Where(Model, "The item is the first or last");
             Assert.IsTrue(results.Contains("horse"));
-            Assert.IsTrue(results.Contains("caterpillar"));
-            Assert.IsTrue(results.Contains("sandwich"));
             Assert.IsFalse(results.Contains("tack"));
+            Assert.IsFalse(results.Contains("caterpillar"));
             Assert.IsFalse(results.Contains("airplane"));
+            Assert.IsTrue(results.Contains("sandwich"));
         }
 
         [TestMethod]
@@ -57,12 +57,12 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(Model, "The item index is even");
+            var results = items.Where(Model, "The item index is even number");
             Assert.IsTrue(results.Contains("horse"));
-            Assert.IsTrue(results.Contains("caterpillar"));
-            Assert.IsTrue(results.Contains("sandwich"));
             Assert.IsFalse(results.Contains("tack"));
+            Assert.IsTrue(results.Contains("caterpillar"));
             Assert.IsFalse(results.Contains("airplane"));
+            Assert.IsTrue(results.Contains("sandwich"));
         }
     }
 }

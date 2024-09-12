@@ -60,6 +60,13 @@ namespace Linq.AI.OpenAI
                 var itemType = type.IsArray ? type.GetElementType() : type.GetGenericArguments()[0];
                 schema["items"] = GetSchema(itemType!);
             }
+            else if (type.IsEnum)
+            {
+                var values = Enum.GetNames(type);
+
+                schema["type"] = "string";
+                schema["enum"] = JArray.FromObject(values);
+            }
             else
             {
 
@@ -73,7 +80,7 @@ namespace Linq.AI.OpenAI
                     propertiesSchema[prop.Name] = GetSchema(prop.PropertyType);
                     var descr = prop.GetCustomAttribute<DescriptionAttribute>();
                     if (descr != null)
-                        propertiesSchema[prop.Name]["description"] = descr.Description;
+                        propertiesSchema[prop.Name]!["description"] = descr.Description;
                 }
                 schema["properties"] = propertiesSchema;
 
