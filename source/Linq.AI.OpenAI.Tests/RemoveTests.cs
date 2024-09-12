@@ -27,7 +27,7 @@ namespace Linq.AI.OpenAI.Tests
             var results = list.Remove(Model, "it is something you can ride").ToList();
 
             Assert.IsFalse(results.Any(item => item.Name == "horse"));
-            Assert.IsFalse(results.Any(item => item.Name == "airline"));
+            Assert.IsFalse(results.Any(item => item.Name == "airplane"));
             Assert.IsTrue(results.Any(item => item.Name == "dog"));
             Assert.IsTrue(results.Any(item => item.Name == "caterpillar"));
             Assert.IsTrue(results.Any(item => item.Name == "chair"));

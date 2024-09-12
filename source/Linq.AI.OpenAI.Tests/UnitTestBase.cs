@@ -10,7 +10,7 @@ namespace Linq.AI.OpenAI.Tests
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()
                 .Build();
-            return new ChatClient(model: "gpt-4o-2024-08-06", config["OpenAIKey"]);
+            return new ChatClient(model: "gpt-4o-mini", config["OpenAIKey"]);
         });
 
         public static ChatClient Model

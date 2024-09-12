@@ -5,7 +5,9 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using OpenAI.Chat;
 using System;
+using System.Data;
 using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Linq.AI.OpenAI
 {
@@ -34,20 +36,19 @@ namespace Linq.AI.OpenAI
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Where", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
             var systemChatMessage = GetSystemPrompt(constraint, instructions);
-            var itemMessage = GetItemPrompt(text);
+            var itemMessage = Utils.GetItemPrompt(text, 0, 1);
             ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
             return chatCompletion.Content.Select(completion =>
             {
-                if (Debugger.IsAttached)
+#if DEBUG
+                lock (model)
                 {
-                    lock (model)
-                    {
-                        Debug.WriteLine("===============================================");
-                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                        Debug.WriteLine(itemMessage.Content.Single().Text);
-                        Debug.WriteLine(completion.Text);
-                    }
+                    Debug.WriteLine("===============================================");
+                    Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                    Debug.WriteLine(itemMessage.Content.Single().Text);
+                    Debug.WriteLine(completion.Text);
                 }
+#endif
                 var result = JsonConvert.DeserializeObject<WhereItem>(completion.Text)!;
                 return result.Matches;
             }).Single()!;
@@ -67,10 +68,30 @@ namespace Linq.AI.OpenAI
         /// <returns></returns>
         public static IList<T> Where<T>(this IEnumerable<T> source, ChatClient model, string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
+            var count = source.Count();
+
             return source.WhereParallelAsync(async (item, index) =>
             {
-                var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
-                return await text!.MatchesAsync(model, goal, instructions, cancellationToken);
+                var schema = StructuredSchemaGenerator.FromType<WhereItem>().ToString();
+                var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Where", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
+                ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
+                var systemChatMessage = GetSystemPrompt(goal, instructions);
+                var itemMessage = Utils.GetItemPrompt(item, index, count);
+                ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
+                return chatCompletion.Content.Select(completion =>
+                {
+#if DEBUG
+                    lock (model)
+                    {
+                        Debug.WriteLine("===============================================");
+                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                        Debug.WriteLine(itemMessage.Content.Single().Text);
+                        Debug.WriteLine(completion.Text);
+                    }
+#endif
+                    var result = JsonConvert.DeserializeObject<WhereItem>(completion.Text)!;
+                    return result.Matches;
+                }).Single()!;
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
 
@@ -84,20 +105,12 @@ namespace Linq.AI.OpenAI
 
                 <INSTRUCTIONS>
                 Given an <ITEM> determine if it matches the provided <GOAL>.
-                Return your classification as a JSON <CLASSIFICATION> object.{{instructions}}
+                The item index starts at 0.
+                {{instructions}}
 
-                <CLASSIFICATION>
-                {"explanation": "<explanation supporting your classification>", "matches": <true or false>}
                 """);
         }
 
-        private static UserChatMessage GetItemPrompt(string item)
-        {
-            return new UserChatMessage($"""
-            <ITEM>
-            {item}
-            """);
-        }
     }
 }
 

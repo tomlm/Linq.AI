@@ -1,14 +1,17 @@
 ﻿using Iciclecreek.Async;
 using Newtonsoft.Json;
 using OpenAI.Chat;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Linq.AI.OpenAI
 {
     internal class AnswerItem
     {
+        [Description("Explain your reasoning")]
         public string? Explanation { get; set; }
 
+        [Description("The answer to the user question")]
         public string? Answer { get; set; }
     }
 
@@ -29,20 +32,19 @@ namespace Linq.AI.OpenAI
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "answer", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
             var systemChatMessage = GetSystemPrompt(text!, instructions);
-            var itemMessage = new UserChatMessage(question);
+            var itemMessage = Utils.GetItemPrompt(question);
             ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
             return chatCompletion.Content.Select(completion =>
             {
-                if (Debugger.IsAttached)
+#if DEBUG
+                lock (model)
                 {
-                    lock (model)
-                    {
-                        Debug.WriteLine("===============================================");
-                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                        Debug.WriteLine(itemMessage.Content.Single().Text);
-                    }
+                    Debug.WriteLine("===============================================");
+                    Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                    Debug.WriteLine(itemMessage.Content.Single().Text);
                     Debug.WriteLine(completion.Text);
                 }
+#endif
                 return JsonConvert.DeserializeObject<AnswerItem>(completion.Text)!.Answer;
             }).Single()!;
         }
@@ -81,10 +83,9 @@ namespace Linq.AI.OpenAI
                     <INSTRUCTIONS>
                     Base your answer only on the information provided in the above <CONTEXT>.
                     Return your answer using the JSON <OUTPUT> below. 
-                    Do not directly mention that you're using the context in your answer.{{instructions}}
+                    Do not directly mention that you're using the context in your answer.
+                    {{instructions ?? String.Empty}}
 
-                    <OUTPUT>
-                    {"explanation": "<explain your reasoning>", "answer": "<the answer>"}`;
                     """);
         }
 

@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using OpenAI.Chat;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace Linq.AI.OpenAI
 {
@@ -10,6 +11,7 @@ namespace Linq.AI.OpenAI
     {
         public string? Explanation { get; set; }
 
+        [Description("The result of the goal")]
         public ResultT? Result { get; set; }
     }
 
@@ -27,8 +29,7 @@ namespace Linq.AI.OpenAI
         /// <returns></returns>
         public static IList<string> Select(this IEnumerable<string> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            return source.Select<string, SelectItem<string>>(model, goal, instructions, maxParallel, cancellationToken)
-                        .Select(s => s.Result!).ToList();
+            return source.Select<string, string>(model, goal, instructions, maxParallel, cancellationToken);
         }
 
         /// <summary>
@@ -60,7 +61,7 @@ namespace Linq.AI.OpenAI
         /// <returns></returns>
         public static IList<ResultT> Select<SourceT, ResultT>(this IEnumerable<SourceT> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
-            var schema = StructuredSchemaGenerator.FromType<ResultT>().ToString();
+            var schema = StructuredSchemaGenerator.FromType<SelectItem<ResultT>>().ToString();
 
             var count = source.Count();
 
@@ -70,22 +71,20 @@ namespace Linq.AI.OpenAI
                 var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "transform", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
                 ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
                 var systemChatMessage = GetSystemPrompt(goal ?? "transform the item to the output schema", schema, instructions);
-                var itemMessage = GetItemPrompt(itemResult!, index, count);
+                var itemMessage = Utils.GetItemPrompt(itemResult!, index, count);
                 ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
                 return chatCompletion.Content.Select(completion =>
                 {
-                    if (Debugger.IsAttached)
+#if DEBUG
+                    lock (source)
                     {
-
-                        lock (source)
-                        {
-                            Debug.WriteLine("===============================================");
-                            Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                            Debug.WriteLine(itemMessage.Content.Single().Text);
-                            Debug.WriteLine(completion.Text);
-                        }
+                        Debug.WriteLine("===============================================");
+                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                        Debug.WriteLine(itemMessage.Content.Single().Text);
+                        Debug.WriteLine(completion.Text);
                     }
-                    return JsonConvert.DeserializeObject<ResultT>(completion.Text)!;
+#endif
+                    return JsonConvert.DeserializeObject<SelectItem<ResultT>>(completion.Text)!.Result;
                 }).Single()!;
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
@@ -99,27 +98,13 @@ namespace Linq.AI.OpenAI
                     {{goal}} 
 
                     <INSTRUCTIONS>
-                    Given an <ITEM> return a new JSON <OUTPUT> object that maps the item to the shape specified by the <GOAL>.{{instructions}}
+                    Given an <ITEM> return a new JSON <OUTPUT> object that maps the item to the shape specified by the <GOAL>.
+                    The item index starts at 0.
+                    {{instructions ?? String.Empty}}
 
-                    <OUTPUT>
-                    {{schema}}
                     """);
         }
 
-        private static UserChatMessage GetItemPrompt(object item, int index, int length)
-        {
-            if (!(item is string))
-            {
-                item = JToken.FromObject(item).ToString();
-            }
-            return new UserChatMessage($$"""
-            <INDEX>
-            {{index}} of {{length}}
-
-            <ITEM>
-            {{item}}
-            """);
-        }
     }
 }
 

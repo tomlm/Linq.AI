@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenAI.Chat;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Linq.AI.OpenAI
@@ -11,8 +12,10 @@ namespace Linq.AI.OpenAI
 
     public class ClassifiedItem
     {
+        [Description("Explain your reasoning")]
         public string? Explanation { get; set; } = null;
 
+        [Description("The category which the item best belongs in")]
         public string? Category { get; set; } = null;
     }
 
@@ -42,7 +45,7 @@ namespace Linq.AI.OpenAI
             var category = await text.ClassifyAsync(model, categories, goal, instructions, cancellationToken);
             return Enum.Parse<EnumT>(category);
         }
-        
+
 
         /// <summary>
         /// Classify text from list of categories
@@ -60,20 +63,19 @@ namespace Linq.AI.OpenAI
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "classify", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
             var systemChatMessage = GetSystemPrompt(goal ?? "classify", categories, instructions);
-            var itemMessage = GetItemPrompt(text!);
+            var itemMessage = Utils.GetItemPrompt(text!);
             ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
             return chatCompletion.Content.Select(completion =>
             {
-                if (Debugger.IsAttached)
+#if DEBUG
+                lock (model)
                 {
-                    lock (model)
-                    {
-                        Debug.WriteLine("===============================================");
-                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                        Debug.WriteLine(itemMessage.Content.Single().Text);
-                        Debug.WriteLine(completion.Text);
-                    }
+                    Debug.WriteLine("===============================================");
+                    Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                    Debug.WriteLine(itemMessage.Content.Single().Text);
+                    Debug.WriteLine(completion.Text);
                 }
+#endif
                 var result = JsonConvert.DeserializeObject<ClassifiedItem>(completion.Text)!;
                 return result.Category!;
             }).Single()!;
@@ -134,12 +136,12 @@ namespace Linq.AI.OpenAI
 
             return source.SelectParallelAsync(async (item, index) =>
             {
-                var  text = (item is string) ? (item as string): JsonConvert.SerializeObject(item).ToString()!;
+                var text = (item is string) ? (item as string) : JsonConvert.SerializeObject(item).ToString()!;
                 var category = await text!.ClassifyAsync(model, categories, goal, instructions, cancellationToken);
                 return new ClassifiedItem<T, string>()
                 {
                     Item = item,
-                    Category  = category
+                    Category = category
                 };
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2);
         }
@@ -157,22 +159,12 @@ namespace Linq.AI.OpenAI
 
                     <INSTRUCTIONS>
                     Given an <ITEM> classify the item using the above <CATEGORIES> based upon the provided <GOAL>.
-                    Return your classification as a JSON <CLASSIFICATION> object.{{instructions ?? String.Empty}}
+                    Return your classification as a JSON <CLASSIFICATION> object.
+                    {{instructions ?? String.Empty}}
 
-                    <CLASSIFICATION>
-                    {"explanation": "<explanation supporting your classification>", "category": "<category assigned>"}
-                    
                     """);
         }
 
-        private static UserChatMessage GetItemPrompt(string item)
-        {
-            return new UserChatMessage($"""
-                    <ITEM>
-                    {item}
-            
-                    """);
-        }
     }
 }
 

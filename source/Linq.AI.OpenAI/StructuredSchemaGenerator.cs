@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace Linq.AI.OpenAI
@@ -70,6 +71,9 @@ namespace Linq.AI.OpenAI
                 foreach (var prop in props)
                 {
                     propertiesSchema[prop.Name] = GetSchema(prop.PropertyType);
+                    var descr = prop.GetCustomAttribute<DescriptionAttribute>();
+                    if (descr != null)
+                        propertiesSchema[prop.Name]["description"] = descr.Description;
                 }
                 schema["properties"] = propertiesSchema;
 

@@ -1,3 +1,13 @@
+using static System.Collections.Specialized.BitVector32;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.Metrics;
+using System.Drawing;
+using System.Reflection.Emit;
+using System.Threading;
+using System;
+
 namespace Linq.AI.OpenAI.Tests
 {
 
@@ -25,8 +35,6 @@ namespace Linq.AI.OpenAI.Tests
         public string? AuthorFullName { get; set; }
 
         public string? Summary { get; set; }
-
-        public DateTime? Date { get; set; }
     }
 
 
@@ -34,14 +42,28 @@ namespace Linq.AI.OpenAI.Tests
     [TestClass]
     public partial class SelectTests : UnitTestBase
     {
-
         [TestMethod]
         public async Task Select_Text_String()
         {
-            var results = (await Text.SelectAsync<string>(Model, "the first word in a paragraph that starts with the letter 'o' or 'b'")).ToList();
-            foreach (var result in results)
+            var results = await Text.SelectAsync<string>(Model, "section titles");
+
+            string[] titles =
+            [
+                "Early Life and Education",
+                "Law Career and Community Organizing",
+                "Political Rise",
+                "Presidential Campaign",
+                "First Term Achievements",
+                "Foreign Policy and Nobel Peace Prize",
+                "Second Term Challenges",
+                "Post-Presidency Activities",
+                "Legacy and Impact",
+                "Personal Life"
+            ];
+
+            for(int i=0; i< titles.Length; i++)
             {
-                Assert.IsTrue(Char.ToLower(result[0]) == 'o' || Char.ToLower(result[0]) == 'b');
+                Assert.AreEqual(titles[i], results[i]);
             }
         }
 

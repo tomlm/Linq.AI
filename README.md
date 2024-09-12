@@ -11,7 +11,7 @@ For each element in a collection an model API call is made to evaluate and retur
 ## OpenAI model
 To use these methods you will need to instantiate a ChatClient model like this:
 ```csharp
-var model = new ChatClient(model: "gpt-4o-2024-08-06", "<modelKey>");
+var model = new ChatClient(model: "gpt-4o-mini", "<modelKey>");
 ```
 > NOTE: The model must support structured output.
 

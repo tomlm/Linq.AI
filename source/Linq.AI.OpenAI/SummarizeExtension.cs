@@ -31,20 +31,19 @@ namespace Linq.AI.OpenAI
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "summarize", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
             ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
             var systemChatMessage = GetSystemPrompt(goal ?? "summarize", instructions);
-            var itemMessage = GetItemPrompt(text!);
+            var itemMessage = Utils.GetItemPrompt(text!);
             ChatCompletion chatCompletion = await model.CompleteChatAsync([systemChatMessage, itemMessage], options);
             return chatCompletion.Content.Select(completion =>
             {
-                if (Debugger.IsAttached)
+#if DEBUG
+                lock (model)
                 {
-                    lock (model)
-                    {
-                        Debug.WriteLine("===============================================");
-                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                        Debug.WriteLine(itemMessage.Content.Single().Text);
-                        Debug.WriteLine(completion.Text);
-                    }
+                    Debug.WriteLine("===============================================");
+                    Debug.WriteLine(systemChatMessage.Content.Single().Text);
+                    Debug.WriteLine(itemMessage.Content.Single().Text);
+                    Debug.WriteLine(completion.Text);
                 }
+#endif
                 var result = JsonConvert.DeserializeObject<Summarization>(completion.Text)!;
                 return result.Summary;
             }).Single()!;
@@ -80,21 +79,11 @@ namespace Linq.AI.OpenAI
 
                     <INSTRUCTIONS>
                     Given an <ITEM> summarize it using the directions in the provided <GOAL>.
-                    Return your summary as a JSON <SUMMARIZATION> object.
                     Ensure that the summary portion is a string.{{instructions}}
 
-                    <SUMMARIZATION>
-                    {"explanation": "<explanation supporting your summarization>", "summary": "<item summary as text>"}
                     """);
         }
 
-        private static UserChatMessage GetItemPrompt(string item)
-        {
-            return new UserChatMessage($"""
-            <ITEM>
-            {item}
-            """);
-        }
     }
 }
 
