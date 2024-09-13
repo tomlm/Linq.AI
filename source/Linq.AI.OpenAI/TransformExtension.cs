@@ -29,9 +29,9 @@ namespace Linq.AI.OpenAI
         /// </summary>
         /// <param name="item">item to Transform</param>
         /// <param name="model">ChatClient to use as model</param>
-        /// <param name="goal">(OPTIONAL) Goal for how you want to Transform</param>
-        /// <param name="instructions">(OPTIONAL) extends system prompt</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
+        /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>transformed text</returns>
         public static ResultT TransformItem<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
             => item.TransformItemAsync<ResultT>(model, goal, instructions, cancellationToken).Result;
@@ -41,9 +41,9 @@ namespace Linq.AI.OpenAI
         /// </summary>
         /// <param name="item">item to Transform</param>
         /// <param name="model">ChatClient to use as model</param>
-        /// <param name="goal">(OPTIONAL) Goal for how you want to Transform</param>
-        /// <param name="instructions">(OPTIONAL) extends system prompt</param>
-        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
+        /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>transformed text</returns>
         public async static Task<ResultT> TransformItemAsync<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
@@ -75,10 +75,10 @@ namespace Linq.AI.OpenAI
         /// <typeparam name="ResultT">result type</typeparam>
         /// <param name="source">source collection</param>
         /// <param name="model">ai model to use</param>
-        /// <param name="goal">goal for transformation</param>
-        /// <param name="instructions">instructions for transformation</param>
-        /// <param name="maxParallel">max parallel operations</param>
-        /// <param name="cancellationToken">cancellation token</param>
+        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
+        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>transformed results</returns>
         public static IList<ResultT> TransformItems<ResultT>(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {

@@ -87,8 +87,8 @@ namespace Linq.AI.OpenAI.Tests
 
 
             var results = artists
-                .Where(name => name.StartsWith("Ed") || name.StartsWith("Q"))
-                .Classify<MusicTypes>(Model).ToList();
+                .Where(name => name.StartsWith("E") || name.StartsWith("Q"))
+                .Classify<MusicTypes>(Model);
 
             Assert.AreEqual(MusicTypes.Pop, results.Single(result => (string)result.Item == "Ed Sheeran").Category);
             Assert.AreEqual(MusicTypes.Rock, results.Single(result => (string)result.Item == "Queen").Category);

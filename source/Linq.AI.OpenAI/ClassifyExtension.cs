@@ -20,12 +20,12 @@ namespace Linq.AI.OpenAI
         /// <typeparam name="EnumT">enumeration to use as classification categories</typeparam>
         /// <param name="source">source to process</param>
         /// <param name="model">chat client to use for the model</param>
-        /// <param name="instructions">(optional) extend instructions.</param>
-        /// <param name="cancellationToken">(optional) cancellation token</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>enumeration for category which best matches</returns>
         public static EnumT Classify<EnumT>(this object source, ChatClient model, string? instructions = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
-            => source.TransformItem<EnumT>(model, "classify from enum", instructions, cancellationToken);
+            => source.TransformItem<EnumT>(model, "classify", instructions, cancellationToken);
 
         /// <summary>
         /// Classify source by list of categories using AI model
@@ -33,8 +33,8 @@ namespace Linq.AI.OpenAI
         /// <param name="source">source to process</param>
         /// <param name="model">ChatClient for model</param>
         /// <param name="categories">collection of categories</param>
-        /// <param name="instructions">(OPTIONAL) extend instructions.</param>
-        /// <param name="cancellationToken">CancellationToken</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>string from categories which best matches.</returns>
         public static string Classify(this object source, ChatClient model, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItem<string>(model, $"classify from categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
@@ -45,12 +45,12 @@ namespace Linq.AI.OpenAI
         /// <typeparam name="EnumT">enumeration to use as classification categories</typeparam>
         /// <param name="source">source to process</param>
         /// <param name="model">chat client to use for the model</param>
-        /// <param name="instructions">(optional) extend instructions.</param>
-        /// <param name="cancellationToken">(optional) cancellation token</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>enumeration for category which best matches</returns>
         public static Task<EnumT> ClassifyAsync<EnumT>(this object source, ChatClient model, string? instructions = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
-            => source.TransformItemAsync<EnumT>(model, "classify from enum", instructions, cancellationToken);
+            => source.TransformItemAsync<EnumT>(model, "classify", instructions, cancellationToken);
 
         /// <summary>
         /// Classify source by list of categories using AI model
@@ -58,8 +58,8 @@ namespace Linq.AI.OpenAI
         /// <param name="source">source to process</param>
         /// <param name="model">ChatClient for model</param>
         /// <param name="categories">collection of categories</param>
-        /// <param name="instructions">(OPTIONAL) extend instructions.</param>
-        /// <param name="cancellationToken">CancellationToken</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>string from categories which best matches.</returns>
         public static Task<string> ClassifyAsync(this object source, ChatClient model, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItemAsync<string>(model, $"classify from categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
@@ -74,9 +74,9 @@ namespace Linq.AI.OpenAI
         /// <typeparam name="EnumT">enumeration to use for categories</typeparam>
         /// <param name="source">collection of text to classifiy</param>
         /// <param name="model">ChatClient for model</param>
-        /// <param name="instructions">(OPTIONAL) extend instructions.</param>
-        /// <param name="maxParallel">(OPTIONAL) max paralell queries to make</param>
-        /// <param name="cancellationToken">CancellationToken</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
+        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>list of classifications</returns>
         public static IList<ClassifiedItem<ItemT, EnumT>> Classify<ItemT, EnumT>(this IEnumerable<ItemT> source, ChatClient model, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
@@ -96,9 +96,9 @@ namespace Linq.AI.OpenAI
         /// <param name="source">collection of text to classifiy</param>
         /// <param name="model">ChatClient for model</param>
         /// <param name="categories">categories to use</param>
-        /// <param name="instructions">(OPTIONAL) extend instructions.</param>
-        /// <param name="maxParallel">(OPTIONAL) max paralell queries to make</param>
-        /// <param name="cancellationToken">CancellationToken</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
+        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>list of classifications</returns>
         public static IList<ClassifiedItem<ItemT, string>> Classify<ItemT>(this IEnumerable<ItemT> source, ChatClient model, IList<string> categories, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
             where ItemT : class

@@ -46,8 +46,8 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Bool()
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
-            Assert.IsTrue(await source.TransformItemAsync<bool>(Model, "is a character in princess bride"));
-            Assert.IsFalse(await source.TransformItemAsync<bool>(Model, "is a character in star wars"));
+            Assert.IsTrue(await source.TransformItemAsync<bool>(Model, "return true if the <ITEM> has a character in princess bride"));
+            Assert.IsFalse(await source.TransformItemAsync<bool>(Model, "return true if if the <ITEM> has a character in star wars"));
         }
 
         [TestMethod]
