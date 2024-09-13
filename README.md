@@ -26,7 +26,7 @@ These extensions use an OpenAI model to work with text.
 | ***.Answer()/.AnswerAsync()*** | get the answer to a question from the text using a model. |
 | ***.Select()/.SelectAsync()*** | Select a collection of items from the text using a model. |
 
-## Object .Classify() 
+## item.Classify() 
 
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
@@ -131,7 +131,7 @@ var answers = items.Answer<float>(model, "What is the cost?");
 
 # Defining new operators
 All of these operators are built up of 2 core operators
-* ***TransformItemAsync()*** - which allows you to give a transformation goal and instructions for a single item.
+* ***TransformItem()/TransformItemAsync()*** - which allows you to give a transformation goal and instructions for a single item.
 * ***TransformItems()*** - Which allows you a transformation goal and instructions for each element in a enumerable collection.
 
 To create a custom operator you create an static class and define static methods for transforming an object or collection of objects.
@@ -144,6 +144,10 @@ For example, here is the implementation of Summarize():
 ```csharp
     public static class SummarizeExtension
     {
+        // Object operator
+        public static string Summarize(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => source.TransformItem<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
+
         // Object operator
         public static Task<string> SummarizeAsync(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItemAsync<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
