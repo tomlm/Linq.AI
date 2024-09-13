@@ -19,10 +19,19 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public async Task String_Summarize()
+        public async Task Summarize_String()
         {
-            var summarization = await Text.SummarizeAsync(Model, "2 words");
+            var summarization = Text.Summarize(Model, "2 words");
             foreach(var summary in summarization)
+            {
+                Debug.WriteLine(summarization);
+            }
+
+            Assert.IsTrue(summarization.Contains("Hope"));
+            Assert.IsTrue(summarization.Contains("Change"));
+            
+            summarization = await Text.SummarizeAsync(Model, "2 words");
+            foreach (var summary in summarization)
             {
                 Debug.WriteLine(summarization);
             }

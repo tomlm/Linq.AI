@@ -45,7 +45,15 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Select_Text_String()
         {
-            var results = await Text.SelectAsync<string>(Model, "section titles");
+            var results = Text.Select<string>(Model, "section titles");
+
+            Assert.IsTrue(results.Count() > 1);
+            foreach (var result in results)
+            {
+                Assert.IsNotNull(result);
+            }
+
+            results = await Text.SelectAsync<string>(Model, "section titles");
 
             Assert.IsTrue(results.Count() > 1);
             foreach (var result in results)
@@ -57,10 +65,19 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Select_Text_Object()
         {
-            var results = await Text.SelectAsync<Article>(Model);
+            var results = Text.Select<Article>(Model);
 
             Assert.IsTrue(results.Count > 1);
             foreach(var result in results)
+            {
+                Assert.IsNotNull(result.Title);
+                Assert.IsNotNull(result.Paragraph);
+            }
+
+            results = await Text.SelectAsync<Article>(Model);
+
+            Assert.IsTrue(results.Count > 1);
+            foreach (var result in results)
             {
                 Assert.IsNotNull(result.Title);
                 Assert.IsNotNull(result.Paragraph);

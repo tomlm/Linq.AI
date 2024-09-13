@@ -22,6 +22,18 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns>true/false</returns>
+        public static bool Matches(this object source, ChatClient model, string goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => source.TransformItem<bool>(model, $"Does the <ITEM> match this => {goal}?", instructions, cancellationToken);
+
+        /// <summary>
+        /// Determine if text matches goal
+        /// </summary>
+        /// <param name="source">source to inspect</param>
+        /// <param name="model">ChatClient to use for model</param>
+        /// <param name="goal">goal for matching</param>
+        /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>true/false</returns>
         public static Task<bool> MatchesAsync(this object source, ChatClient model, string goal, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItemAsync<bool>(model, $"Does the <ITEM> match this => {goal}?", instructions, cancellationToken);
 

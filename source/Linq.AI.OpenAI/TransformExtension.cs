@@ -33,6 +33,18 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions">(OPTIONAL) extends system prompt</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>transformed text</returns>
+        public static ResultT TransformItem<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => item.TransformItemAsync<ResultT>(model, goal, instructions, cancellationToken).Result;
+
+        /// <summary>
+        /// Transform text using OpenAI model
+        /// </summary>
+        /// <param name="item">item to Transform</param>
+        /// <param name="model">ChatClient to use as model</param>
+        /// <param name="goal">(OPTIONAL) Goal for how you want to Transform</param>
+        /// <param name="instructions">(OPTIONAL) extends system prompt</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>transformed text</returns>
         public async static Task<ResultT> TransformItemAsync<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
@@ -119,9 +131,9 @@ namespace Linq.AI.OpenAI
         internal static string GetItemIndexClause(int index, int count, string? instructions)
         {
             return $"""
-                    The item index starts at 0.
-                    Item Index: {index} 
-                    Total Item Count: {count}
+                    First Index: 0
+                    Last Index: {count-1}
+                    This Item Index: {index} 
                     {instructions ?? string.Empty}
                     """;
         }

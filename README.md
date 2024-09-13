@@ -20,36 +20,36 @@ These extensions use an OpenAI model to work with text.
 
 | Extension | Description | 
 | ----------| ------------|
-| ***.ClassifyAsync()*** | classify the text using a model. |
-| ***.SummarizeAsync()*** | Create a summarization for the text by using a model. |
-| ***.MatchesAsync()*** | Return whether the text matches using a model. |
-| ***.AnswerAsync()*** | get the answer to a question from the text using a model. |
-| ***.SelectAsync()*** | Generate a collection of items from the text using a model. |
+| ***.Classify()/.ClassifyAsync()*** | classify the text using a model. |
+| ***.Summarize()/.SummarizeAsync()*** | Create a summarization for the text by using a model. |
+| ***.Matches()/.MatchesAsync()*** | Return whether the text matches using a model. |
+| ***.Answer()/.AnswerAsync()*** | get the answer to a question from the text using a model. |
+| ***.Select()/.SelectAsync()*** | Select a collection of items from the text using a model. |
 
 ## Object .Classify() 
 
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classification = await item.ClassifyAsync<Genres>(model);
+var classification = item.Classify<Genres>(model);
 ```
 
 ## item.Summarize() 
 
 ```csharp
-var summary = await item.SummarizeAsync(model, "with 3 words");
+var summary = item.Summarize(model, "with 3 words");
 ```
 
 ## item.Matches() 
 
 ```csharp
-if (await item.MatchesAsync(model, "there is date"))
+if (item.Matches(model, "there is date"))
   ...
 ```
 
 ## item.Answer() 
 
 ```csharp
-var summary = await text.AnswerAsync(model, "what is the birthday?");
+var summary = text.Answer(model, "what is the birthday?");
 ```
 
 ## item.Select() 
@@ -57,7 +57,7 @@ Select pulls a collection of items from the source.
 
 Example using model to select 
 ```csharp
-var words = await text.SelectAsync<string>(model, "The second word of every paragraph");
+var words = text.Select<string>(model, "The second word of every paragraph");
 ```
 
 Example using model to select structed data.
@@ -67,7 +67,7 @@ public class HREF
 	public string Url {get;set;}
 	public string Title {get;set;}
 }
-var summary = await text.SelectAsync<HREF>(model);
+var summary = text.Select<HREF>(model);
 ```
 
 # Linq Extensions 
@@ -82,7 +82,7 @@ These collection extensions use an OpenAI model to work with collections using L
 | ***.Classify()*** | classify each item using a model. |
 | ***.Answer()*** | get the answer to a question for each item using a model. |
 
-> NOTE: These methods are synchronous linq methods, but internally they run all of the AI calls as throttled parallel background tasks.
+> NOTE: These methods internally run AI calls as throttled parallel background tasks.
 
 ## enumerable.Classify() 
 This allows you to classify each item using a model;
@@ -150,6 +150,6 @@ For example, here is the implementation of Summarize():
 
         // collection operator
         public static IList<string> Summarize(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
-            => source.TransformItems<string>(model, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
+            => source.TransformItem<string>(model, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
     }
 ```

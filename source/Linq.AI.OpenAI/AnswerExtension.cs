@@ -13,6 +13,30 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions">system instructions to help control the answer</param>
         /// <param name="cancellationToken">cancellation token to cancel the operation.</param>
         /// <returns>answer of question</returns>
+        public static string Answer(this object source, ChatClient model, string question, string? instructions = null, CancellationToken cancellationToken = default)
+            => source.TransformItem<string>(model, question, instructions, cancellationToken);
+
+        /// <summary>
+        /// Answer a question about the source using a OpenAI model
+        /// </summary>
+        /// <param name="source">object to inspect</param>
+        /// <param name="model">ChatClient for model</param>
+        /// <param name="question">question you want answered</param>
+        /// <param name="instructions">system instructions to help control the answer</param>
+        /// <param name="cancellationToken">cancellation token to cancel the operation.</param>
+        /// <returns>answer of question</returns>
+        public static ResultT Answer<ResultT>(this object source, ChatClient model, string question, string? instructions = null, CancellationToken cancellationToken = default)
+            => source.TransformItem<ResultT>(model, question, instructions, cancellationToken);
+
+        /// <summary>
+        /// Ask a question about the source object and get the answer as text.
+        /// </summary>
+        /// <param name="source">object to inspect</param>
+        /// <param name="model">ChatClient for model</param>
+        /// <param name="question">question you want answered</param>
+        /// <param name="instructions">system instructions to help control the answer</param>
+        /// <param name="cancellationToken">cancellation token to cancel the operation.</param>
+        /// <returns>answer of question</returns>
         public static Task<string> AnswerAsync(this object source, ChatClient model, string question, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItemAsync<string>(model, question, instructions, cancellationToken);
 

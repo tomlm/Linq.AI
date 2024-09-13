@@ -13,7 +13,10 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_String2String()
         {
             var source = "My name is Tom.";
-            var transformation = await source.TransformItemAsync<string>(Model, "into spanish");
+            var transformation = source.TransformItem<string>(Model, "into spanish");
+            Assert.AreEqual("Me llamo Tom.", transformation!);
+            
+            transformation = await source.TransformItemAsync<string>(Model, "into spanish");
             Assert.AreEqual("Me llamo Tom.", transformation!);
         }
 
@@ -21,7 +24,11 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_String2Object()
         {
             var source = "I have 4 children and my name is Inigo Montoya.";
-            var obj = await source.TransformItemAsync<TestObject>(Model);
+            var obj = source.TransformItem<TestObject>(Model);
+            Assert.AreEqual("Inigo Montoya", obj.Name);
+            Assert.AreEqual(4, obj.Count);
+            
+            obj = await source.TransformItemAsync<TestObject>(Model);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
         }

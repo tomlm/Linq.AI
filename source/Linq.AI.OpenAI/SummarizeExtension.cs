@@ -21,6 +21,18 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions">(OPTIONAL) extends system prompt</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Summarization text</returns>
+        public static string Summarize(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => source.TransformItem<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
+
+        /// <summary>
+        /// Summarize text using OpenAI model
+        /// </summary>
+        /// <param name="source">source to summarize</param>
+        /// <param name="model">ChatClient to use as model</param>
+        /// <param name="goal">(OPTIONAL) how to summarize</param>
+        /// <param name="instructions">(OPTIONAL) extends system prompt</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Summarization text</returns>
         public static Task<string> SummarizeAsync(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItemAsync<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
 
