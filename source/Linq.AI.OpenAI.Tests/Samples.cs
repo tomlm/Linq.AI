@@ -1,3 +1,5 @@
+using Newtonsoft.Json.Linq;
+using OpenAI.Chat;
 using System.Diagnostics;
 
 
@@ -105,72 +107,58 @@ namespace Linq.AI.OpenAI.Tests
             Assert.AreEqual("foo/foo.csproj", options.ProjectOrSolution);
             Assert.AreEqual(true, options.NoLogo);
         }
-    }
 
-    public class CommandLineOptions
-    {
-        [System.ComponentModel.Description("The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.")]
-        public string? ProjectOrSolution { get; set; }
+        private static string GetItemText(object item1, object item2)
+        {
+            string item1Text = (item1 is string) ? item1 as string : JToken.FromObject(item1).ToString();
+            string item2Text = (item2 is string) ? item2 as string : JToken.FromObject(item2).ToString();
+            return $$"""
+                <ITEM1>
+                {{item1Text}}
+                
+                <ITEM2>
+                {{item2Text}}
+                """;
+        }
 
-        [System.ComponentModel.Description("Use current runtime as the target runtime.")]
-        public bool? UseCurrentRuntime { get; set; }
+        /// <summary>
+        /// Compare two objects for semantic equivelence using OpenAI model
+        /// </summary>
+        /// <param name="source">object to inspect</param>
+        /// <param name="model">ChatClient for model</param>
+        /// <param name="question">question you want answered</param>
+        /// <param name="instructions">system instructions to help control the answer</param>
+        /// <param name="cancellationToken">cancellation token to cancel the operation.</param>
+        /// <returns>answer of question</returns>
+        public bool CompareSemantically(object source, object target, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => GetItemText(source, target).TransformItem<bool>(model, goal ?? "are <ITEM1> and <ITEM2> semantically equivelent", instructions, cancellationToken);
 
-        [System.ComponentModel.Description("The target framework to build for. The target framework must also be specified in the project file.")]
-        public string? Framework { get; set; }
+        [TestMethod]
+        public void Compare_Strings_Semantically()
+        {
+            Assert.IsTrue(CompareSemantically("fourteen", "14", Model));
+            Assert.IsTrue(CompareSemantically("fourteen years old", "10 + 4 years", Model));
+            Assert.IsTrue(CompareSemantically("Me llamo Tom", "Mi nombre es Tom", Model));
+            Assert.IsTrue(CompareSemantically("My name is Tom", "Mi nombre es Tom", Model, instructions: "allow different langauges to be semantically equal"));
+            Assert.IsFalse(CompareSemantically("Me llamo Tom", "Mi padre es Tom", Model));
+        }
 
-        [System.ComponentModel.Description("The configuration to use for building the project. The default for most projects is 'Debug'.")]
-        public string? Configuration { get; set; }
-
-        [System.ComponentModel.Description("The target runtime to build for.")]
-        public string? RuntimeIdentifier { get; set; }
-
-        [System.ComponentModel.Description("Set the value of the $(VersionSuffix) property to use when building the project.")]
-        public string? VersionSuffix { get; set; }
-
-        [System.ComponentModel.Description("Do not restore the project before building.")]
-        public bool? NoRestore { get; set; }
-
-        [System.ComponentModel.Description("Allows the command to stop and wait for user input or action (for example to complete authentication).")]
-        public bool? Interactive { get; set; }
-
-        [System.ComponentModel.Description("Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")]
-        public string? Verbosity { get; set; }
-
-        [System.ComponentModel.Description("Include debugging output.")]
-        public bool? Debug { get; set; }
-
-        [System.ComponentModel.Description("The output directory to place built artifacts in.")]
-        public string? OutputDirectory { get; set; }
-
-        [System.ComponentModel.Description("The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.")]
-        public string? ArtifactsPath { get; set; }
-
-        [System.ComponentModel.Description("Do not use incremental building.")]
-        public bool? NoIncremental { get; set; }
-
-        [System.ComponentModel.Description("Do not build project-to-project references and only build the specified project.")]
-        public bool? NoDependencies { get; set; }
-
-        [System.ComponentModel.Description("Do not display the startup banner or the copyright message.")]
-        public bool? NoLogo { get; set; }
-
-        [System.ComponentModel.Description("Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.")]
-        public bool? SelfContained { get; set; }
-
-        [System.ComponentModel.Description("Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.")]
-        public bool? NoSelfContained { get; set; }
-
-        [System.ComponentModel.Description("The target architecture like x86|x64|Arm32|Arm46 etc.")]
-        public string? Architecture { get; set; }
-
-        [System.ComponentModel.Description("The target operating system.")]
-        public string? OperatingSystem { get; set; }
-
-        [System.ComponentModel.Description("Force the command to ignore any persistent build servers.")]
-        public bool? DisableBuildServers { get; set; }
-
-        [System.ComponentModel.Description("Show command line help.")]
-        public bool? Help { get; set; }
+        [Ignore]
+        [TestMethod]
+        public async Task Compare_Objects_Semantically()
+        {
+            var task1= Text.SelectAsync<Article>(Model);
+            var task2 = Text.SelectAsync<Article>(Model);
+            await Task.WhenAll(task1, task2);
+            var models1 = await task1;
+            var models2 = await task2;
+            for (int i = 0; i < models1.Count(); i++)
+            {
+                var model1 = models1[i];
+                var model2 = models2[i];
+                Assert.IsTrue(CompareSemantically(model1, model2, Model));
+            }
+        }
     }
 
 }

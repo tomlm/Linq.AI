@@ -21,7 +21,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(Model, "item is a thing you can travel on");
+            var results = items.Where(Model, "you can ride on or in it");
             Assert.IsTrue(results.Contains("horse"));
             Assert.IsTrue(results.Contains("airplane"));
             Assert.IsFalse(results.Contains("tack"));
@@ -34,7 +34,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Select(item => new { Name = item }).Where(Model, "item is something you can ride");
+            var results = items.Select(item => new { Name = item }).Where(Model, "you can ride on or in it");
             Assert.IsTrue(results.Any(item => item.Name == "horse"));
             Assert.IsFalse(results.Any(item => item.Name == "tack"));
             Assert.IsTrue(results.Any(item => item.Name == "airplane"));

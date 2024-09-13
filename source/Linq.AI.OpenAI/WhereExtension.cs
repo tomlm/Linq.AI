@@ -23,7 +23,7 @@ namespace Linq.AI.OpenAI
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>true/false</returns>
         public static bool Matches(this object source, ChatClient model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<bool>(model, $"Does the <ITEM> match this => {constraint}?", instructions, cancellationToken);
+            => source.TransformItem<bool>(model, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
 
         /// <summary>
         /// Determine if text matches goal
@@ -35,7 +35,7 @@ namespace Linq.AI.OpenAI
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>true/false</returns>
         public static Task<bool> MatchesAsync(this object source, ChatClient model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItemAsync<bool>(model, $"Does the <ITEM> match this => {constraint}?", instructions, cancellationToken);
+            => source.TransformItemAsync<bool>(model, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
 
         /// <summary>
         /// Determine if items matches goal
