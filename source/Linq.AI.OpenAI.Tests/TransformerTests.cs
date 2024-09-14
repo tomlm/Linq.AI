@@ -5,13 +5,13 @@ namespace Linq.AI.OpenAI.Tests
 
 
     [TestClass]
-    public class MiscTests : UnitTestBase
+    public class TransformerTests : UnitTestBase
     {
 
         [TestMethod]
-        public async Task Generate_Text()
+        public void Generate_Text()
         {
-            var results = await Model.GenerateAsync<string>("a haiku about camping", "it must have the word camp, campfire or camping in it");
+            var results = Model.Generate("a haiku about camping", "it must have the word camp, campfire or camping in it");
             Assert.IsTrue(results.ToLower().Contains("camp"));
         }
 
@@ -49,6 +49,14 @@ namespace Linq.AI.OpenAI.Tests
             Assert.IsTrue(generated.Any(item => item.Name == "Mexico City" && item.Country == "Mexico" ));
             Assert.AreEqual(5, generated.Count());
         }
+
+        [TestMethod]
+        public async Task Transformer_StringDefault()
+        {
+            Assert.AreEqual("tset", Model.TransformItem("test", "reverse letters"));
+            Assert.AreEqual("tset", await Model.TransformItemAsync("test", "reverse letters"));
+        }
+
     }
 
     internal class CityObject

@@ -14,10 +14,10 @@ namespace Linq.AI.OpenAI.Tests
         {
             var source = "My name is Tom.";
             var transformation = Model.TransformItem<string>(source, "into spanish");
-            Assert.AreEqual("Me llamo Tom.", transformation!);
+            Assert.IsTrue(Model.Compare("Me llamo Tom.", transformation!));
             
             transformation = await Model.TransformItemAsync<string>(source, "into spanish");
-            Assert.AreEqual("Me llamo Tom.", transformation!);
+            Assert.IsTrue(Model.Compare("Me llamo Tom.", transformation!));
         }
 
         [TestMethod]
@@ -69,7 +69,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_Answer()
         {
-            Assert.AreEqual("Honolulu", await Model.TransformItemAsync<string>(Text, "What town was he born in?"));
+            Assert.IsTrue(Model.Compare("Honolulu", await Model.TransformItemAsync<string>(Text, "What town was he born in?")));
         }
 
         [TestMethod]
