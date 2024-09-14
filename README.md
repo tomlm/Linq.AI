@@ -134,19 +134,36 @@ This operator let's you ask a question for each item in a collection.
 var answers = items.Answer<float>(model, "What is the cost?");
 ```
 
-# ITransformer Extensions
-The ITransformer implements .TransformItem()/.TransformItems() methods. Linq.AI adds the followingextension methods on the
-ITransformer itself;
+# ITransformer 
+The ITransformer implements the core primatives for using AI to manipulate generation and transformation.
 
 | Extension | Description | 
 | ----------| ------------|
 | ***.Generate()/.GenerateAsync()*** | use a model and a goal to return a shaped result. |
+| ***.TransformItem()/.TransformItemAsync()*** | use a model and a goal to transform an item into  a shaped result. |
+| ***.TransformItems()*** | use a model and a goal to transform a collection of items into a collection of shaped results. |
 
-## transformer.Generate()/transformer.GenerateAsync()
+## transformer.Generate()
 Given a model and a goal return a shaped result.
 ```csharp
 var names = transformer.Generate<string[]>("funny names for people named bob");
 var cities = transformer.Generate<City>("return the top 5 largest cities in the world.");
+```
+
+## transformer.TransformItem()
+Given a model and a goal return a shaped result.
+```csharp
+var result = "my name is Tom".TransformItem<string>("translate to spanish); // ==> "Mi nombre es Tom"
+```
+
+## transformer.TransformItems()
+Transform a collection of items using a model and a goal.
+```csharp
+var items = new string[] {"Hello", "My name is Tom", "One more please"];
+var results = items.TransformItems("translate to spanish);
+// result[0] = "Hola"
+// result[1] = "Me llamo Tom"
+// result[2] = "Una mas, por favor"
 ```
 
 # Defining new operators
