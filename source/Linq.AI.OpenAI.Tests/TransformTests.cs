@@ -13,10 +13,10 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_String2String()
         {
             var source = "My name is Tom.";
-            var transformation = source.TransformItem<string>(Model, "into spanish");
+            var transformation = Model.TransformItem<string>(source, "into spanish");
             Assert.AreEqual("Me llamo Tom.", transformation!);
             
-            transformation = await source.TransformItemAsync<string>(Model, "into spanish");
+            transformation = await Model.TransformItemAsync<string>(source, "into spanish");
             Assert.AreEqual("Me llamo Tom.", transformation!);
         }
 
@@ -24,11 +24,11 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_String2Object()
         {
             var source = "I have 4 children and my name is Inigo Montoya.";
-            var obj = source.TransformItem<TestObject>(Model);
+            var obj = Model.TransformItem<TestObject>(source);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
             
-            obj = await source.TransformItemAsync<TestObject>(Model);
+            obj = await Model.TransformItemAsync<TestObject>(source);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
         }
@@ -37,7 +37,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Object2Object()
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
-            var obj = await source.TransformItemAsync<TestObject>(Model, instructions: "Do not fill in properties that you don't have data for.");
+            var obj = await Model.TransformItemAsync<TestObject>(source, instructions: "Do not fill in properties that you don't have data for.");
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(0, obj.Count);
         }
@@ -46,15 +46,15 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Bool()
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
-            Assert.IsTrue(await source.TransformItemAsync<bool>(Model, "return true if the <ITEM> has a character in princess bride"));
-            Assert.IsFalse(await source.TransformItemAsync<bool>(Model, "return true if if the <ITEM> has a character in star wars"));
+            Assert.IsTrue(await Model.TransformItemAsync<bool>(source, "return true if the <ITEM> has a character in princess bride"));
+            Assert.IsFalse(await Model.TransformItemAsync<bool>(source, "return true if if the <ITEM> has a character in star wars"));
         }
 
         [TestMethod]
         public async Task Transform_Classify()
         {
-            Assert.AreEqual(TestCategories.Car, await "Ford".TransformItemAsync<TestCategories>(Model, "classify"));
-            Assert.AreEqual(TestCategories.Plane, await "Cessna".TransformItemAsync<TestCategories>(Model, "classify"));
+            Assert.AreEqual(TestCategories.Car, await Model.TransformItemAsync<TestCategories>("Ford", "classify"));
+            Assert.AreEqual(TestCategories.Plane, await Model.TransformItemAsync<TestCategories>("Cessna", "classify"));
         }
 
         [TestMethod]
@@ -62,20 +62,20 @@ namespace Linq.AI.OpenAI.Tests
         {
 
             var categories = String.Join(",", Enum.GetNames<TestCategories>());
-            Assert.AreEqual("Car", await "Ford".TransformItemAsync<string>(Model, $"Pick the category from this list: {categories}"));
-            Assert.AreEqual("Plane", await "Cessna".TransformItemAsync<string>(Model, $"Pick the category from this list: {categories}"));
+            Assert.AreEqual("Car", await Model.TransformItemAsync<string>("Ford", $"Pick the category from this list: {categories}"));
+            Assert.AreEqual("Plane", await Model.TransformItemAsync<string>("Cessna", $"Pick the category from this list: {categories}"));
         }
 
         [TestMethod]
         public async Task Transform_Answer()
         {
-            Assert.AreEqual("Honolulu", await Text.TransformItemAsync<string>(Model, "What town was he born in?"));
+            Assert.AreEqual("Honolulu", await Model.TransformItemAsync<string>(Text, "What town was he born in?"));
         }
 
         [TestMethod]
         public async Task Transform_Text2Strings()
         {
-            var results = await Text.TransformItemAsync<string[]>(Model, "return titles that are bolded");
+            var results = await Model.TransformItemAsync<string[]>(Text, "return titles that are bolded");
 
             string[] titles =
             [
@@ -100,7 +100,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_Text2Objects()
         {
-            var results = await Text.TransformItemAsync<Article[]>(Model);
+            var results = await Model.TransformItemAsync<Article[]>(Text);
 
             Assert.IsTrue(results.Count() > 0);
             foreach(var result in results)
@@ -120,7 +120,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.TransformItems<string>(Model, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
+            var results = Model.TransformItems<string>(sources, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
             var result = results[0];
             Assert.IsTrue(result.StartsWith("#"));
             Assert.IsTrue(result.Split('\n').First().Contains("Title 1"));
@@ -138,7 +138,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.TransformItems<TargetObject>(Model).ToList();
+            var results = Model.TransformItems<TargetObject>(sources).ToList();
             var result = results[0];
             Assert.AreEqual("Joe Blow", result.AuthorFullName);
             Assert.AreEqual("Joe", result.Author!.FirstName);
@@ -166,7 +166,7 @@ namespace Linq.AI.OpenAI.Tests
                 new SourceObject() { Title="Title 3", Description="Which is better? Flossing or brushing or doing nothing?", Writer="Gert Gooble", PubliicationDate = new DateTime(2020, 10, 1) },
             };
 
-            foreach (var result in sources.TransformItems<TargetObject>(Model))
+            foreach (var result in Model.TransformItems<TargetObject>(sources))
             {
                 switch (result.Summary)
                 {

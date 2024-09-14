@@ -129,11 +129,35 @@ This operator let's you ask a question for each item in a collection.
 var answers = items.Answer<float>(model, "What is the cost?");
 ```
 
-# Defining new operators
-All of these operators are built up of 2 core operators
-* ***TransformItem()/TransformItemAsync()*** - which allows you to give a transformation goal and instructions for a single item.
-* ***TransformItems()*** - Which allows you a transformation goal and instructions for each element in a enumerable collection.
+# Model Extensions
+All of these extensions are built up using 3 ChatClient extensions as primitives.
 
+| Extension | Description | 
+| ----------| ------------|
+| ***.Generate()/.GenerateAsync()*** | use a model and a goal to return a shaped result. |
+| ***.TransformItem()/.TransformItemAsync()*** | use a model, object and goal to transform object into shaped result. |
+| ***.TransformItems()/.TransformItemsAsync()*** | use a model, collection and goal to transform each object in the collection into a collection of shaped results. |
+
+## model.Generate()/model.GenerateAsync()
+Given a model and a goal return a shaped result.
+```csharp
+var names = model.Generate<string[]>("funny names for people named bob");
+var cities = model.Generate<City>("return the top 5 largest cities in the world.");
+```
+
+## model.TransformItem()/model.TransformItemAsync()
+Given a model and item, transform it into the shaped result using goal to guide the transformation.
+```csharp
+var piglatin = model.TransformItem<string>("cow", "transform to pig latin"); // outputs "owcay"
+```
+
+## model.TransformItem()/model.TransformItemAsync()
+Given a model and item, transform it into the shaped result using goal to guide the transformation.
+```csharp
+var piglatin = model.TransformItems<string>(["cow", "dog", "pig"], "transform to pig latin"); // outputs ["owcay", "ogday", "igpay"]
+```
+
+# Defining new operators
 To create a custom operator you create an static class and define static methods for transforming an object or collection of objects.
 
 For example, here is the implementation of Summarize():
@@ -144,16 +168,16 @@ For example, here is the implementation of Summarize():
 ```csharp
     public static class SummarizeExtension
     {
-        // Object operator
+        // operator to summarize object
         public static string Summarize(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItem<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
 
-        // Object operator
+        // operator to summarize object
         public static Task<string> SummarizeAsync(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
             => source.TransformItemAsync<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
 
-        // collection operator
+        // operator to summarize collection of objects
         public static IList<string> Summarize(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<string>(model, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
+            => source.TransformItems<string>(model, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
     }
 ```

@@ -33,8 +33,8 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>transformed text</returns>
-        public static ResultT TransformItem<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
-            => item.TransformItemAsync<ResultT>(model, goal, instructions, cancellationToken).Result;
+        public static ResultT TransformItem<ResultT>(this ChatClient model, object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<ResultT>(item, goal, instructions, cancellationToken).Result;
 
         /// <summary>
         /// Transform text using OpenAI model
@@ -45,7 +45,7 @@ namespace Linq.AI.OpenAI
         /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>transformed text</returns>
-        public async static Task<ResultT> TransformItemAsync<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public async static Task<ResultT> TransformItemAsync<ResultT>(this ChatClient model, object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Transform", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
@@ -80,7 +80,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>transformed results</returns>
-        public static IList<ResultT> TransformItems<ResultT>(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public static IList<ResultT> TransformItems<ResultT>(this ChatClient model, IEnumerable<object> source, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
             var count = source.Count();
@@ -110,6 +110,44 @@ namespace Linq.AI.OpenAI
             }, maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken);
         }
 
+        /// <summary>
+        /// Transform text using OpenAI model
+        /// </summary>
+        /// <param name="item">item to Transform</param>
+        /// <param name="model">ChatClient to use as model</param>
+        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
+        /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
+        /// <returns>transformed text</returns>
+        public static ResultT TransformItem<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<ResultT>(item, goal, instructions, cancellationToken).Result;
+
+        /// <summary>
+        /// Transform text using OpenAI model
+        /// </summary>
+        /// <param name="item">item to Transform</param>
+        /// <param name="model">ChatClient to use as model</param>
+        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
+        /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
+        /// <returns>transformed text</returns>
+        public static Task<ResultT> TransformItemAsync<ResultT>(this object item, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<ResultT>(item, goal, instructions, cancellationToken);
+
+        /// <summary>
+        /// Transform items using pool of background tasks and AI model
+        /// </summary>
+        /// <typeparam name="ResultT">result type</typeparam>
+        /// <param name="source">source collection</param>
+        /// <param name="model">ai model to use</param>
+        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
+        /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
+        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
+        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
+        /// <returns>transformed results</returns>
+        public static IList<ResultT> TransformItems<ResultT>(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+            => model.TransformItems<ResultT>(source, goal, instructions, maxParallel, cancellationToken);
+
         internal static SystemChatMessage GetSystemPrompt(string goal, string? instructions = null, int? index = null, int? count = null)
         {
             if (index != null && count != null)
@@ -117,7 +155,7 @@ namespace Linq.AI.OpenAI
                 instructions = GetItemIndexClause((int)index, (int)count, instructions);
             }
             return new SystemChatMessage($$"""
-                    You are an expert at transforming text
+                    You are an expert at transforming text.
 
                     <GOAL>
                     {{goal}}
