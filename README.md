@@ -114,7 +114,12 @@ var targetItems = items.Select<SourceItem,TargetItem>(model)
 
 Transform a collection of text into another format, like markdown.
 ```csharp
-var markdownItems = items.Select(model, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
+var markdownItems = items.Select(model,	goal: """"
+					transform each item into markdown like this:
+					# {{TITLE}}
+					{{AUTHOR}}
+					{{DESCRIPTION}}
+					""");
 ```
 
 ## enumerable.Summarize() 
