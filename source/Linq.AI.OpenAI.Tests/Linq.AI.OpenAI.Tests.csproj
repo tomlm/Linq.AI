@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Linq.AI.OpenAI\Linq.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\Linq.AI\Linq.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

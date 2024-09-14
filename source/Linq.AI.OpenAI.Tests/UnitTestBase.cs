@@ -5,16 +5,16 @@ namespace Linq.AI.OpenAI.Tests
 {
     public class UnitTestBase
     {
-        private static Lazy<ChatClient> client = new Lazy<ChatClient>(() =>
+        private static Lazy<ITransformer> transformer = new Lazy<ITransformer>(() =>
         {
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()
                 .Build();
-            return new ChatClient(model: "gpt-4o-mini", config["OpenAIKey"]);
+            return new OpenAITransformer(model: "gpt-4o-mini", config["OpenAIKey"]);
         });
 
-        public static ChatClient Model
-            => client.Value;
+        public static ITransformer Model
+            => transformer.Value;
 
         public string Text = """
                 ### Barack Obama: A Journey of Hope and Change

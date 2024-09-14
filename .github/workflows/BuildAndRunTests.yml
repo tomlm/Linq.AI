@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Linq.AI.OpenAI
+    - name: Checkout Linq.AI
       uses: actions/checkout@v4
 
     - name: Setup .NET
@@ -26,10 +26,10 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      run: dotnet restore source/Linq.AI.OpenAI.sln 
+      run: dotnet restore source/Linq.AI.sln 
 
     - name: Build
-      run: dotnet build --no-restore source/Linq.AI.OpenAI.sln --property WarningLevel=0
+      run: dotnet build --no-restore source/Linq.AI.sln --property WarningLevel=0
       
     - name: Test
       run: |

@@ -11,7 +11,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Generate_Text()
         {
-            var results = await Model.GenerateAsync<string>("a haiku about camping");
+            var results = await Model.GenerateAsync<string>("a haiku about camping", "it must have the word camp, campfire or camping in it");
             Assert.IsTrue(results.ToLower().Contains("camp"));
         }
 
@@ -54,9 +54,9 @@ namespace Linq.AI.OpenAI.Tests
     internal class CityObject
     {
         [System.ComponentModel.Description("Name of the city")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [System.ComponentModel.Description("Name of the Country")]
-        public string Country { get; set; }
+        public string? Country { get; set; }
     }
 }

@@ -1,20 +1,25 @@
-# Linq.AI.OpenAI
-This library adds Linq extension methods using OpenAI structured outputs. 
+# Linq.AI
+This library adds Linq extension methods using structured outputs. 
 
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
 
 ## Installation
+```dotnet add package Linq.AI```
+
+## ITransformer 
+The Linq.AI package needs an ITransformer to represent the AI model that is being used. 
+
+Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI:
 ```dotnet add package Linq.AI.OpenAI ```
 
-## OpenAI model
-To use these methods you will need to instantiate a ChatClient model:
+And then instantiate a transformer like this:
 ```csharp
-var model = new ChatClient(model: "gpt-4o-mini", "<modelKey>");
+var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>");
 ```
 > NOTE: The model must support structured output.
 
 # Object Extensions
-These extensions use an OpenAI model to work with text.
+The object extensions use the ITransformer model to work with a single item (aka text, object, etc.).
 
 | Extension | Description | 
 | ----------| ------------|
@@ -69,7 +74,7 @@ var summary = text.Select<HREF>(model);
 ```
 
 # Linq Extensions 
-The collection extensions process each item in a collections with an OpenAI model.
+The object extensions use the ITransformer model to work each item in a collections.
 
 | Extension | Description | 
 | ----------| ------------|
@@ -97,7 +102,7 @@ var bigItems = items.Remove(model, "item would fit in a bread box");
 ```
 
 ## enumerable.Select() 
-.Select() let's you transform the source into target using an OpenAI model.
+.Select() let's you transform the source into target using an ITransformer model.
 
 You can use it to transform an object from one format to another by simply giving the types. The model
 will use AI to appropriately map the properties between the object types.
@@ -111,7 +116,7 @@ var markdownItems = items.Select(model, "transform each item into markdown like 
 ```
 
 ## enumerable.Summarize() 
-Generate text summary for each item using an OpenAI model.
+Generate text summary for each item using an ITransformer model.
 
 ```chsarp
 var summaries = items.Summarize(model);
@@ -128,32 +133,19 @@ This operator let's you ask a question for each item in a collection.
 var answers = items.Answer<float>(model, "What is the cost?");
 ```
 
-# Model Extensions
-All of these extensions are built up using 3 ChatClient primitives.
+# ITransformer Extensions
+The ITransformer implements .TransformItem()/.TransformItems() methods. Linq.AI adds the followingextension methods on the
+ITransformer itself;
 
 | Extension | Description | 
 | ----------| ------------|
 | ***.Generate()/.GenerateAsync()*** | use a model and a goal to return a shaped result. |
-| ***.TransformItem()/.TransformItemAsync()*** | use a model, object and goal to transform object into shaped result. |
-| ***.TransformItems()/.TransformItemsAsync()*** | use a model, collection and goal to transform each object in the collection into a collection of shaped results. |
 
-## model.Generate()/model.GenerateAsync()
+## transformer.Generate()/transformer.GenerateAsync()
 Given a model and a goal return a shaped result.
 ```csharp
-var names = model.Generate<string[]>("funny names for people named bob");
-var cities = model.Generate<City>("return the top 5 largest cities in the world.");
-```
-
-## model.TransformItem()/model.TransformItemAsync()
-Given a model and item, transform it into the shaped result using goal to guide the transformation.
-```csharp
-var piglatin = model.TransformItem<string>("cow", "transform to pig latin"); // outputs "owcay"
-```
-
-## model.TransformItems()/model.TransformItemsAsync()
-Given a model and item, transform it into the shaped result using goal to guide the transformation.
-```csharp
-var piglatin = model.TransformItems<string>(["cow", "dog", "pig"], "transform to pig latin"); // outputs ["owcay", "ogday", "igpay"]
+var names = transformer.Generate<string[]>("funny names for people named bob");
+var cities = transformer.Generate<City>("return the top 5 largest cities in the world.");
 ```
 
 # Defining new operators

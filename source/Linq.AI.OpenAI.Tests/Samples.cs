@@ -1,3 +1,4 @@
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 using Newtonsoft.Json.Linq;
 using OpenAI.Chat;
 using System.Diagnostics;
@@ -125,13 +126,13 @@ namespace Linq.AI.OpenAI.Tests
         /// Compare two objects for semantic equivelence using OpenAI model
         /// </summary>
         /// <param name="source">object to inspect</param>
-        /// <param name="model">ChatClient for model</param>
+        /// <param name="transformer">ChatClient for model</param>
         /// <param name="question">question you want answered</param>
         /// <param name="instructions">system instructions to help control the answer</param>
         /// <param name="cancellationToken">cancellation token to cancel the operation.</param>
         /// <returns>answer of question</returns>
-        public bool CompareSemantically(object source, object target, ChatClient model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
-            => GetItemText(source, target).TransformItem<bool>(model, goal ?? "are <ITEM1> and <ITEM2> semantically equivelent", instructions, cancellationToken);
+        public bool CompareSemantically(object source, object target, ITransformer transformer, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => GetItemText(source, target).TransformItem<bool>(transformer, goal ?? "are <ITEM1> and <ITEM2> semantically equivelent", instructions, cancellationToken);
 
         [TestMethod]
         public void Compare_Strings_Semantically()

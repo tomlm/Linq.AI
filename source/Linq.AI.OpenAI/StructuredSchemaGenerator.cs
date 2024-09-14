@@ -90,7 +90,7 @@ namespace Linq.AI.OpenAI
             if (nullableType != null || !type.IsValueType)
             {
                 if (!isRequired)
-                    schema["type"] = new JArray() { schema["type"], "null" };
+                    schema["type"] = new JArray() { schema["type"]!, "null" };
             }
 
             return schema;
