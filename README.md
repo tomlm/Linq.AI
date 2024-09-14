@@ -10,6 +10,7 @@ This library adds Linq extension methods which use AI models to transform and ma
 The Linq.AI package needs an ITransformer for the AI model that is being used. 
 
 Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI:
+
 ```dotnet add package Linq.AI.OpenAI ```
 
 And then instantiate a transformer like this:
