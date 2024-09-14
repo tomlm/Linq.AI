@@ -1,16 +1,18 @@
 # Linq.AI
-This library adds Linq extension methods using structured outputs. 
+This library adds Linq extension methods which use AI models to transform and manipulate data.
 
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
 
 ## Installation
-```dotnet add package Linq.AI```
+```
+dotnet add package Linq.AI
+dotnet add package Linq.AI.OpenAI
+```
 
 ## ITransformer 
-The Linq.AI package needs an ITransformer to represent the AI model that is being used. 
+The Linq.AI package needs an ITransformer for the AI model that is being used. 
 
-Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI:
-```dotnet add package Linq.AI.OpenAI ```
+Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI
 
 And then instantiate a transformer like this:
 ```csharp
@@ -112,7 +114,12 @@ var targetItems = items.Select<SourceItem,TargetItem>(model)
 
 Transform a collection of text into another format, like markdown.
 ```csharp
-var markdownItems = items.Select(model, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
+var markdownItems = items.Select(model,	goal: """"
+					transform each item into markdown like this:
+					# {{TITLE}}
+					{{AUTHOR}}
+					{{DESCRIPTION}}
+					""");
 ```
 
 ## enumerable.Summarize() 
@@ -133,19 +140,38 @@ This operator let's you ask a question for each item in a collection.
 var answers = items.Answer<float>(model, "What is the cost?");
 ```
 
-# ITransformer Extensions
-The ITransformer implements .TransformItem()/.TransformItems() methods. Linq.AI adds the followingextension methods on the
-ITransformer itself;
+# ITransformer 
+The ITransformer implements the core primatives for using AI to manipulate generation and transformation.
 
 | Extension | Description | 
 | ----------| ------------|
 | ***.Generate()/.GenerateAsync()*** | use a model and a goal to return a shaped result. |
+| ***.TransformItem()/.TransformItemAsync()*** | use a model and a goal to transform an item into  a shaped result. |
+| ***.TransformItems()*** | use a model and a goal to transform a collection of items into a collection of shaped results. |
 
-## transformer.Generate()/transformer.GenerateAsync()
+## transformer.Generate()
 Given a model and a goal return a shaped result.
 ```csharp
+var haiku = transformer.Generate<string>("write a haiku about camping");
 var names = transformer.Generate<string[]>("funny names for people named bob");
-var cities = transformer.Generate<City>("return the top 5 largest cities in the world.");
+var cities = transformer.Generate<City[]>("return the top 5 largest cities in the world.");
+```
+
+## transformer.TransformItem()
+Given a model and a goal return a shaped result.
+```csharp
+var result = "my name is Tom".TransformItem<string>("translate to spanish);
+// ==> "Me llamo Tom"
+```
+
+## transformer.TransformItems()
+Transform a collection of items using a model and a goal.
+```csharp
+var items = new string[] {"Hello", "My name is Tom", "One more please"];
+var results = items.TransformItems("translate to spanish);
+// result[0] = "Hola"
+// result[1] = "Me llamo Tom"
+// result[2] = "Una mas, por favor"
 ```
 
 # Defining new operators
