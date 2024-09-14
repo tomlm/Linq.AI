@@ -4,14 +4,15 @@ This library adds Linq extension methods which use AI models to transform and ma
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
 
 ## Installation
-```dotnet add package Linq.AI```
+```
+dotnet add package Linq.AI
+dotnet add package Linq.AI.OpenAI
+```
 
 ## ITransformer 
 The Linq.AI package needs an ITransformer for the AI model that is being used. 
 
-Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI:
-
-```dotnet add package Linq.AI.OpenAI ```
+Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI
 
 And then instantiate a transformer like this:
 ```csharp
