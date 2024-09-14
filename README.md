@@ -1,5 +1,5 @@
 # Linq.AI
-This library adds Linq extension methods using structured outputs. 
+This library adds Linq extension methods which use AI models to transform and manipulate data.
 
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
 
@@ -7,7 +7,7 @@ This library adds Linq extension methods using structured outputs.
 ```dotnet add package Linq.AI```
 
 ## ITransformer 
-The Linq.AI package needs an ITransformer to represent the AI model that is being used. 
+The Linq.AI package needs an ITransformer for the AI model that is being used. 
 
 Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI:
 ```dotnet add package Linq.AI.OpenAI ```
