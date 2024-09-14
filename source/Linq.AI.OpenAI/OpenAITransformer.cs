@@ -56,6 +56,8 @@ namespace Linq.AI.OpenAI
             _chatClient = chatClient;
         }
 
+        public float? Temperature { get; set; } = 0.0f;
+
         /// <summary>
         /// Generate an item of shape T based on "goal"
         /// </summary>
@@ -107,7 +109,11 @@ namespace Linq.AI.OpenAI
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Transform", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
-            ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
+            ChatCompletionOptions options = new ChatCompletionOptions() 
+            {
+                ResponseFormat = responseFormat, 
+                Temperature = this.Temperature 
+            };
             var systemChatMessage = GetSystemPrompt(goal ?? "Transform", instructions);
             var itemMessage = GetItemMessage(item);
             ChatCompletion chatCompletion = await _chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options, cancellationToken: cancellationToken);
@@ -147,7 +153,11 @@ namespace Linq.AI.OpenAI
             {
                 var itemResult = item;
                 var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "transform", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
-                ChatCompletionOptions options = new ChatCompletionOptions() { ResponseFormat = responseFormat, };
+                ChatCompletionOptions options = new ChatCompletionOptions()
+                {
+                    ResponseFormat = responseFormat,
+                    Temperature = this.Temperature
+                };
                 var systemChatMessage = GetSystemPrompt(goal ?? "transform the item to the output schema", instructions!, index, count);
                 var itemMessage = GetItemMessage(itemResult!);
                 ChatCompletion chatCompletion = await _chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options, ct);
