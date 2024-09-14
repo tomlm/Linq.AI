@@ -66,7 +66,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of items which didn't match the goal</returns>
-        public ResultT Generate<ResultT>(string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public ResultT Generate<ResultT>(string goal, string? instructions = null, CancellationToken cancellationToken = default)
             => TransformItem<ResultT>(String.Empty, goal, instructions, cancellationToken);
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Linq.AI.OpenAI
         /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of items which didn't match the goal</returns>
-        public Task<ResultT> GenerateAsync<ResultT>(string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public Task<ResultT> GenerateAsync<ResultT>(string goal, string? instructions = null, CancellationToken cancellationToken = default)
             => TransformItemAsync<ResultT>(String.Empty, goal, instructions, cancellationToken);
 
         /// <summary>

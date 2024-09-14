@@ -14,30 +14,27 @@ namespace Linq.AI
         /// <summary>
         /// Generate an item of shape ResultT using goal and instructions
         /// </summary>
-        /// <typeparam name="ResultT">type of items</typeparam>
-        /// <param name="source">collection of items</param>
-        /// <param name="constraint">The constraint to match to remove an item</param>
+        /// <typeparam name="ResultT">result type</typeparam>
+        /// <param name="goal">The goal for what to generate</param>
         /// <param name="instructions">(OPTIONAL) additional instructions</param>
-        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of items which didn't match the goal</returns>
-        ResultT Generate<ResultT>(string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default);
+        ResultT Generate<ResultT>(string goal, string? instructions = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Generate an item of ResultT using goal and instructions
         /// </summary>
-        /// <typeparam name="T">type of items</typeparam>
-        /// <param name="source">collection of items</param>
-        /// <param name="constraint">The constraint to match to remove an item</param>
+        /// <typeparam name="ResultT">result type</typeparam>
+        /// <param name="goal">The goal for what you want to generte</param>
         /// <param name="instructions">(OPTIONAL) additional instructions</param>
-        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of items which didn't match the goal</returns>
-        Task<ResultT> GenerateAsync<ResultT>(string goal, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default);
+        Task<ResultT> GenerateAsync<ResultT>(string goal, string? instructions = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Transform item into shape ResulT using goal and instructions
         /// </summary>
+        /// <typeparam name="ResultT">result type</typeparam>
         /// <param name="item">item to Transform</param>
         /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
         /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
@@ -48,7 +45,7 @@ namespace Linq.AI
         /// <summary>
         /// Transform item using shape ResulT Async using goal and instructions
         /// </summary>
-        /// <typeparam name="ResultT">type of result</typeparam>
+        /// <typeparam name="ResultT">result type</typeparam>
         /// <param name="item">item to Transform</param>
         /// <param name="model">ChatClient to use as model</param>
         /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
