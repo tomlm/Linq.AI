@@ -146,14 +146,16 @@ The ITransformer implements the core primatives for using AI to manipulate gener
 ## transformer.Generate()
 Given a model and a goal return a shaped result.
 ```csharp
+var haiku = transformer.Generate<string>("write a haiku about camping");
 var names = transformer.Generate<string[]>("funny names for people named bob");
-var cities = transformer.Generate<City>("return the top 5 largest cities in the world.");
+var cities = transformer.Generate<City[]>("return the top 5 largest cities in the world.");
 ```
 
 ## transformer.TransformItem()
 Given a model and a goal return a shaped result.
 ```csharp
-var result = "my name is Tom".TransformItem<string>("translate to spanish); // ==> "Mi nombre es Tom"
+var result = "my name is Tom".TransformItem<string>("translate to spanish);
+// ==> "Me llamo Tom"
 ```
 
 ## transformer.TransformItems()
