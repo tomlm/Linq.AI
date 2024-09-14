@@ -37,7 +37,7 @@ namespace Linq.AI.OpenAI
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>string from categories which best matches.</returns>
         public static string Classify(this object source, ChatClient model, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<string>(model, $"classify from categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
+            => source.TransformItem<string>(model, $"classify into categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
 
         /// <summary>
         /// Classify source by enum using AI model
@@ -62,7 +62,7 @@ namespace Linq.AI.OpenAI
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>string from categories which best matches.</returns>
         public static Task<string> ClassifyAsync(this object source, ChatClient model, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItemAsync<string>(model, $"classify from categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
+            => source.TransformItemAsync<string>(model, $"classify into categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
 
         public static IList<ClassifiedItem<string, EnumT>> Classify<EnumT>(this IEnumerable<string> source, ChatClient model, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum

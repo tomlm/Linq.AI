@@ -1,15 +1,13 @@
 # Linq.AI.OpenAI
 This library adds Linq extension methods using OpenAI structured outputs. 
+
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
 
 ## Installation
 ```dotnet add package Linq.AI.OpenAI ```
 
-## Architecture
-For each element in a collection an model API call is made to evaluate and return the result. These are done in parallel on background threads.
-
 ## OpenAI model
-To use these methods you will need to instantiate a ChatClient model like this:
+To use these methods you will need to instantiate a ChatClient model:
 ```csharp
 var model = new ChatClient(model: "gpt-4o-mini", "<modelKey>");
 ```
@@ -55,9 +53,9 @@ var summary = text.Answer(model, "what is the birthday?");
 ## item.Select() 
 Select pulls a collection of items from the source.
 
-Example using model to select 
+Example using model to select text from the item
 ```csharp
-var words = text.Select<string>(model, "The second word of every paragraph");
+var words = item.Select<string>(model, "The second word of every paragraph");
 ```
 
 Example using model to select structed data.
@@ -71,16 +69,16 @@ var summary = text.Select<HREF>(model);
 ```
 
 # Linq Extensions 
-These collection extensions use an OpenAI model to work with collections using Linq style methods.
+The collection extensions process each item in a collections with an OpenAI model.
 
 | Extension | Description | 
 | ----------| ------------|
-| ***.Where()*** | Filter the collection of items by using a model. filter |
-| ***.Select()*** | transform the item into another format using a model. |
-| ***.Remove()*** | Remove items from a collection of items by using a model. filter |
-| ***.Summarize()*** | Create a summarization for each item by using a model. |
-| ***.Classify()*** | classify each item using a model. |
-| ***.Answer()*** | get the answer to a question for each item using a model. |
+| ***.Select()*** | Transforms each item into another format with natural language. |
+| ***.Where()*** | Keeps each item which matches with natural language filter. |
+| ***.Remove()*** | Remove each item which matches a natural language filter. |
+| ***.Summarize()*** | Create a summarization for each item. |
+| ***.Classify()*** | Classify each item. |
+| ***.Answer()*** | Answers the question for each item. |
 
 > NOTE: These methods internally run AI calls as throttled parallel background tasks.
 
@@ -94,19 +92,20 @@ var classifiedItems = items.Classify<Genres>(model);
 ## enumerable.Where()/enumerable.Remove() 
 Filter a collection using natural language
 ```csharp
-var breadboxItems = items.Where(model, "item would fit in a bread box");
+var smallItems = items.Where(model, "item would fit in a bread box");
 var bigItems = items.Remove(model, "item would fit in a bread box");
 ```
 
 ## enumerable.Select() 
 .Select() let's you transform the source into target using an OpenAI model.
 
-You can use it to transform an object from one format to another by simply giving the types. It will use model to do the transformation.
+You can use it to transform an object from one format to another by simply giving the types. The model
+will use AI to appropriately map the properties between the object types.
 ```csharp
 var targetItems = items.Select<SourceItem,TargetItem>(model)
 ```
 
-You can use it to transform a collection of text 
+Transform a collection of text into another format, like markdown.
 ```csharp
 var markdownItems = items.Select(model, "transform each item into markdown like this:\n# {{TITLE}}\n{{AUTHOR}}\n{{Description}}")
 ```
@@ -130,7 +129,7 @@ var answers = items.Answer<float>(model, "What is the cost?");
 ```
 
 # Model Extensions
-All of these extensions are built up using 3 ChatClient extensions as primitives.
+All of these extensions are built up using 3 ChatClient primitives.
 
 | Extension | Description | 
 | ----------| ------------|
@@ -151,7 +150,7 @@ Given a model and item, transform it into the shaped result using goal to guide 
 var piglatin = model.TransformItem<string>("cow", "transform to pig latin"); // outputs "owcay"
 ```
 
-## model.TransformItem()/model.TransformItemAsync()
+## model.TransformItems()/model.TransformItemsAsync()
 Given a model and item, transform it into the shaped result using goal to guide the transformation.
 ```csharp
 var piglatin = model.TransformItems<string>(["cow", "dog", "pig"], "transform to pig latin"); // outputs ["owcay", "ogday", "igpay"]
