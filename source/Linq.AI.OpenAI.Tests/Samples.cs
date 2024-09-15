@@ -1,7 +1,10 @@
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+using Iciclecreek.Async;
 using Newtonsoft.Json.Linq;
 using OpenAI.Chat;
 using System.Diagnostics;
+using System.Reflection;
 
 
 namespace Linq.AI.OpenAI.Tests
@@ -46,7 +49,7 @@ namespace Linq.AI.OpenAI.Tests
                   ]
                 }
                 """;
-            var cards = (await Text.SelectAsync<Card>(Model, "each section"))
+            var cards = (await Model.SelectAsync<Card>(Text, "each section"))
                 .Select<string>(Model, goal);
 
             foreach (var card in cards)
@@ -102,13 +105,34 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task ArgumentParser()
         {
-            var options = await "foo/foo.csproj using Debug configuration for x64 with no logo."
-                .TransformItemAsync<CommandLineOptions>(Model);
+            var options = await Model.TransformItemAsync<CommandLineOptions>("foo/foo.csproj using Debug configuration for x64 with no logo.");
             Assert.AreEqual("x64", options.Architecture);
             Assert.AreEqual("foo/foo.csproj", options.ProjectOrSolution);
             Assert.AreEqual(true, options.NoLogo);
         }
 
+        public class PresidentInfo
+        {
+            [Instruction("Name of the president")]
+            public string President { get; set; }
+
+            public bool IsAlive { get; set; }
+
+            [Instruction("The president's age")]
+            public int? Age { get; set; }
+        }
+
+
+        [TestMethod]
+        public void TestComplex()
+        {
+            var results = new List<Task<PresidentInfo[]>>()
+            {
+                Model.GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states"),
+                Model.GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states")
+            }.WaitAll();
+            var result = Model.Compare(results[0], results[1]);
+        }
     }
 
 }

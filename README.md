@@ -20,49 +20,60 @@ var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>");
 ```
 > NOTE: The model must support structured output.
 
-# Object Extensions
-The object extensions use the ITransformer model to work with a single item (aka text, object, etc.).
+# Model Extensions
+The model extensions use the ITransformer model to work with a single item (aka text, object, etc.).
 
 | Extension | Description | 
 | ----------| ------------|
 | ***.Classify()/.ClassifyAsync()*** | classify the text using a model. |
 | ***.Summarize()/.SummarizeAsync()*** | Create a summarization for the text by using a model. |
 | ***.Matches()/.MatchesAsync()*** | Return whether the text matches using a model. |
-| ***.Answer()/.AnswerAsync()*** | get the answer to a question from the text using a model. |
+| ***.Query()/.QueryAsync()*** | get the answer to a global question using a model. |
+| ***.QueryAbout()/.QueryAboutAsync()*** | get the answer to a question from the text using a model. |
 | ***.Select()/.SelectAsync()*** | Select a collection of items from the text using a model. |
 
-## item.Classify() 
+## model.Classify() 
+Classify an item using an enumeration or list of categories.
 
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classification = item.Classify<Genres>(model);
+var classification = model.Classify<Genres>(item);
 ```
 
-## item.Summarize() 
+## model.Summarize() 
+Summarize the item 
 
 ```csharp
-var summary = item.Summarize(model, "with 3 words");
+var summary = model.Summarize(item, "with 3 words");
 ```
 
-## item.Matches() 
-
+## model.Matches() 
+Get true/false if the item matches the question
 ```csharp
-if (item.Matches(model, "there is date"))
+if (model.Matches(item, "there is date"))
   ...
 ```
 
-## item.Answer() 
+## model.Query() 
+Ask a question using models knowledge.
 
 ```csharp
-var summary = text.Answer(model, "what is the birthday?");
+var answer = model.Query(item, "what is the birthday of barack obama?");
 ```
 
-## item.Select() 
-Select pulls a collection of items from the source.
+## model.QueryAbout() 
+Ask a question about an item
+
+```csharp
+var answer = model.QueryAbout(item, "what is his birthday?");
+```
+
+## model.Select() 
+Extracts a collection of items from the item.
 
 Example using model to select text from the item
 ```csharp
-var words = item.Select<string>(model, "The second word of every paragraph");
+var words = model.Select<string>(item, "The second word of every paragraph");
 ```
 
 Example using model to select structed data.
@@ -72,7 +83,7 @@ public class HREF
 	public string Url {get;set;}
 	public string Title {get;set;}
 }
-var summary = text.Select<HREF>(model);
+var summary = model.Select<HREF>(item);
 ```
 
 # Linq Extensions 
@@ -85,7 +96,7 @@ The object extensions use the ITransformer model to work each item in a collecti
 | ***.Remove()*** | Remove each item which matches a natural language filter. |
 | ***.Summarize()*** | Create a summarization for each item. |
 | ***.Classify()*** | Classify each item. |
-| ***.Answer()*** | Answers the question for each item. |
+| ***.QueryAboutEach()*** | Answers the question for each item. |
 
 > NOTE: These methods internally run AI calls as throttled parallel background tasks.
 
@@ -134,10 +145,10 @@ You can control the summarization with a hint
 var summaries = items.Summarize(model, "generate a 3 word summary");
 ```
 
-## enumerable.Answer() 
+## enumerable.QueryAboutEach() 
 This operator let's you ask a question for each item in a collection.
 ```csharp
-var answers = items.Answer<float>(model, "What is the cost?");
+var answers = items.QueryAboutEach<float>(model, "What is the cost?");
 ```
 
 # ITransformer 
@@ -160,7 +171,7 @@ var cities = transformer.Generate<City[]>("return the top 5 largest cities in th
 ## transformer.TransformItem()
 Given a model and a goal return a shaped result.
 ```csharp
-var result = "my name is Tom".TransformItem<string>("translate to spanish);
+var result = model.TransformItem<string>("my name is Tom", "translate to spanish);
 // ==> "Me llamo Tom"
 ```
 
@@ -168,14 +179,37 @@ var result = "my name is Tom".TransformItem<string>("translate to spanish);
 Transform a collection of items using a model and a goal.
 ```csharp
 var items = new string[] {"Hello", "My name is Tom", "One more please"];
-var results = items.TransformItems("translate to spanish);
+var results = items.TransformItems(model, "translate to spanish);
 // result[0] = "Hola"
 // result[1] = "Me llamo Tom"
 // result[2] = "Una mas, por favor"
 ```
 
+# InstructionAttribute
+You can add [Description] or [Instruction] attributes to properties on you classes to help the LLM properly work with your objects when
+the property name is amibiguious.
+
+```csharp
+public class LeaderInfo
+{
+    [Instruction("The name of country that the person is leader for")]
+    public string Name {get;set;}
+
+    [Instruction("The title for the leadership role the leader has. (Example: President)")]
+    public string Title {get;set;}
+
+    [Instruction("The full name for the leader")]
+    public string FullName {get;set;}
+
+    [Instruction("The year they took the role.")]
+    public int? Date { get; set;}
+}
+var leader = model.Query<LeaderInfo>("barack obama");
+// {"Name":"United States","Title":"President","FullName":"Barack Hussein Obama II","Date":2009}
+```
+
 # Defining new operators
-To create a custom operator you create an static class and define static methods for transforming an object or collection of objects.
+To create a custom operator you create an static class and define static methods for the ITransformer or collection of objects.
 
 For example, here is the implementation of Summarize():
 
@@ -186,15 +220,15 @@ For example, here is the implementation of Summarize():
     public static class SummarizeExtension
     {
         // operator to summarize object
-        public static string Summarize(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
+        public static string Summarize(this ITransformer model, object item, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItem<string>(item, goal ?? "create a summarization", instructions, cancellationToken);
 
         // operator to summarize object
-        public static Task<string> SummarizeAsync(this object source, ChatClient model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItemAsync<string>(model, goal ?? "create a summarization", instructions, cancellationToken);
+        public static Task<string> SummarizeAsync(this ITransformer model, object item, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<string>(item, goal ?? "create a summarization", instructions, cancellationToken);
 
         // operator to summarize collection of objects
-        public static IList<string> Summarize(this IEnumerable<object> source, ChatClient model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
-            => source.TransformItems<string>(model, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
+        public static IList<string> Summarize(this IEnumerable<object> source, ITransformer model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+            => model.TransformItems<string>(source, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
     }
 ```

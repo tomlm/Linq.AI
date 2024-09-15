@@ -20,8 +20,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions on how to summarize</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>Summarization text</returns>
-        public static string Summarize(this object source, ITransformer model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<string>(model, goal ?? "summarize", instructions, cancellationToken);
+        public static string Summarize(this ITransformer model, object source,  string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItem<string>(source, goal ?? "summarize", instructions, cancellationToken);
 
         /// <summary>
         /// Summarize text using OpenAI model
@@ -32,8 +32,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions on how to summarize</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>Summarization text</returns>
-        public static Task<string> SummarizeAsync(this object source, ITransformer model, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItemAsync<string>(model, goal ?? "summarize", instructions, cancellationToken);
+        public static Task<string> SummarizeAsync(this ITransformer model, object source, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<string>(source, goal ?? "summarize", instructions, cancellationToken);
 
         /// <summary>
         /// Summarize each element in a collection using OpenAI model

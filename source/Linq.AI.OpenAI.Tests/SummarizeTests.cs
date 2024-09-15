@@ -21,7 +21,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Summarize_String()
         {
-            var summarization = Text.Summarize(Model, "2 words");
+            var summarization = Model.Summarize(Text, "2 words");
             foreach(var summary in summarization)
             {
                 Debug.WriteLine(summarization);
@@ -30,7 +30,7 @@ namespace Linq.AI.OpenAI.Tests
             Assert.IsTrue(summarization.Contains("Hope"));
             Assert.IsTrue(summarization.Contains("Change"));
             
-            summarization = await Text.SummarizeAsync(Model, "2 words");
+            summarization = await Model.SummarizeAsync(Text, "2 words");
             foreach (var summary in summarization)
             {
                 Debug.WriteLine(summarization);

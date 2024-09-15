@@ -11,7 +11,7 @@
         /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>transformed text</returns>
-        public static ResultT TransformItem<ResultT>(this object item, ITransformer model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public static ResultT TransformItem<ResultT>(this ITransformer model, object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
             => model.TransformItemAsync<ResultT>(item, goal, instructions, cancellationToken).Result;
 
         /// <summary>
@@ -23,7 +23,7 @@
         /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>transformed text</returns>
-        public static Task<ResultT> TransformItemAsync<ResultT>(this object item, ITransformer model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public static Task<ResultT> TransformItemAsync<ResultT>(this ITransformer model, object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
             => model.TransformItemAsync<ResultT>(item, goal, instructions, cancellationToken);
 
         /// <summary>

@@ -23,8 +23,8 @@ namespace Linq.AI
 
             return source.WhereParallelAsync(async (item, index, ct) =>
             {
-                var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
-                var matches = await item!.MatchesAsync(model, constraint, Utils.GetItemIndexClause(index, count, instructions), ct);
+                // var text = (item is string) ? item as string : JsonConvert.SerializeObject(item).ToString();
+                var matches = await model.MatchesAsync(item!, constraint, Utils.GetItemIndexClause(index, count, instructions), ct);
                 return !matches;
             }, maxParallel: maxParallel ?? Environment.ProcessorCount * 2, cancellationToken: cancellationToken);
         }

@@ -22,9 +22,9 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>enumeration for category which best matches</returns>
-        public static EnumT Classify<EnumT>(this object source, ITransformer model, string? instructions = null, CancellationToken cancellationToken = default)
+        public static EnumT Classify<EnumT>(this ITransformer model, object source, string? instructions = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
-            => source.TransformItem<EnumT>(model, "classify", instructions, cancellationToken);
+            => model.TransformItem<EnumT>(source, "classify", instructions, cancellationToken);
 
         /// <summary>
         /// Classify source by list of categories using AI model
@@ -35,8 +35,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>string from categories which best matches.</returns>
-        public static string Classify(this object source, ITransformer model, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<string>(model, $"classify into categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
+        public static string Classify(this ITransformer model, object source, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItem<string>(source, $"classify into categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
 
         /// <summary>
         /// Classify source by enum using AI model
@@ -47,9 +47,9 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>enumeration for category which best matches</returns>
-        public static Task<EnumT> ClassifyAsync<EnumT>(this object source, ITransformer model, string? instructions = null, CancellationToken cancellationToken = default)
+        public static Task<EnumT> ClassifyAsync<EnumT>(this ITransformer model, object source, string? instructions = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
-            => source.TransformItemAsync<EnumT>(model, "classify", instructions, cancellationToken);
+            => model.TransformItemAsync<EnumT>(source, "classify", instructions, cancellationToken);
 
         /// <summary>
         /// Classify source by list of categories using AI model
@@ -60,8 +60,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions for how to classify.</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>string from categories which best matches.</returns>
-        public static Task<string> ClassifyAsync(this object source, ITransformer model, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItemAsync<string>(model, $"classify into categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
+        public static Task<string> ClassifyAsync(this ITransformer model, object source, IList<string> categories, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<string>(source, $"classify into categories: [{String.Join(",", categories)}]", instructions, cancellationToken);
 
         public static IList<ClassifiedItem<string, EnumT>> Classify<EnumT>(this IEnumerable<string> source, ITransformer model, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
             where EnumT : struct, Enum
@@ -81,7 +81,7 @@ namespace Linq.AI
             where EnumT : struct, Enum
             => source.SelectParallelAsync(async (item, index, ct) =>
             {
-                var category = await item!.ClassifyAsync<EnumT>(model, instructions, ct);
+                var category = await model.ClassifyAsync<EnumT>(item!, instructions, ct);
                 return new ClassifiedItem<ItemT, EnumT>()
                 {
                     Item = item,
@@ -103,7 +103,7 @@ namespace Linq.AI
             where ItemT : class
             => source.SelectParallelAsync(async (item, index, ct) =>
             {
-                var category = await item!.ClassifyAsync(model, categories, instructions, ct);
+                var category = await model.ClassifyAsync(item, categories, instructions, ct);
                 return new ClassifiedItem<ItemT, string>()
                 {
                     Item = item,

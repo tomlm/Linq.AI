@@ -81,9 +81,17 @@ namespace Linq.AI.OpenAI
                     bool propRequired = prop.GetCustomAttribute<RequiredAttribute>() != null;
 
                     propertiesSchema[prop.Name] = GetSchema(prop.PropertyType, propRequired);
-                    var descr = prop.GetCustomAttribute<DescriptionAttribute>();
-                    if (descr != null)
-                        propertiesSchema[prop.Name]!["description"] = descr.Description;
+                    var instr = prop.GetCustomAttribute<InstructionAttribute>();
+                    if (instr != null)
+                    {
+                        propertiesSchema[prop.Name]!["description"] = instr.Instruction;
+                    }
+                    else
+                    {
+                        var descr = prop.GetCustomAttribute<DescriptionAttribute>();
+                        if (descr != null)
+                            propertiesSchema[prop.Name]!["description"] = descr.Description;
+                    }
                 }
                 schema["properties"] = propertiesSchema;
             }

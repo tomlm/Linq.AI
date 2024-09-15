@@ -14,8 +14,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions on how to transform</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of objects found in text</returns>
-        public static IList<T> Select<T>(this object source, ITransformer model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<T[]>(model, goal, instructions, cancellationToken).ToList();
+        public static IList<T> Select<T>(this ITransformer model, object source, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItem<T[]>(source, goal, instructions, cancellationToken).ToList();
 
         /// <summary>
         /// Transform text into collection of objects into objects using OpenAI model
@@ -27,8 +27,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions on how to transform</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of objects found in text</returns>
-        public async static Task<IList<T>> SelectAsync<T>(this object source, ITransformer model, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
-            => (await source.TransformItemAsync<T[]>(model, goal, instructions, cancellationToken)).ToList();
+        public async static Task<IList<T>> SelectAsync<T>(this ITransformer model, object source, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+            => (await model.TransformItemAsync<T[]>(source, goal, instructions, cancellationToken)).ToList();
 
         /// <summary>
         /// Transform collection of text into text using OpenAI model

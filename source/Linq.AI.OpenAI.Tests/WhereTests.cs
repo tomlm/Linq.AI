@@ -9,11 +9,11 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Matches()
         {
-            Assert.IsTrue("a duck".Matches(Model, "item is a bird"));
-            Assert.IsFalse("a truck".Matches(Model, "item is a bird"));
+            Assert.IsTrue(Model.Matches("a duck", "item is a bird"));
+            Assert.IsFalse(Model.Matches("a truck", "item is a bird"));
 
-            Assert.IsTrue(await "a duck".MatchesAsync(Model, "item is a bird"));
-            Assert.IsFalse(await "a truck".MatchesAsync(Model, "item is a bird"));
+            Assert.IsTrue(await Model.MatchesAsync("a duck", "item is a bird"));
+            Assert.IsFalse(await Model.MatchesAsync("a truck", "item is a bird"));
         }
 
         [TestMethod]

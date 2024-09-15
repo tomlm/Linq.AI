@@ -14,7 +14,7 @@ namespace Linq.AI.OpenAI.Tests
 
 
     [TestClass]
-    public class AnswerTests: UnitTestBase
+    public class QueryAboutTests: UnitTestBase
     {
         public List<Weather> Forecast = JArray.Parse("""
             [
@@ -64,17 +64,48 @@ namespace Linq.AI.OpenAI.Tests
             """).ToObject<List<Weather>>()!;
 
 
-        [TestMethod]
-        public void Answer()
+        public class LeaderInfo
         {
-            var answer = Text.Answer(Model, "what is the name of the city where was obama born");
+            [Instruction("The name of country that the person is leader for")]
+            public string Name { get; set; }
+
+            [Instruction("The title for the leadership role the leader has. (Example: President)")]
+            public string Title { get; set; }
+
+            [Instruction("The full name for the leader")]
+            public string FullName { get; set; }
+
+            [Instruction("The year they took the role.")]
+            public int? Date { get; set; }
+        }
+        [TestMethod]
+        public void Query()
+        {
+
+            var leader = Model.Query<LeaderInfo>("Barack Obama");
+            Assert.AreEqual(2009, leader.Date);
+            Assert.AreEqual("President", leader.Title);
+        }
+
+        [TestMethod]
+        public async Task QueryAsync()
+        {
+            var leader = await Model.QueryAsync<LeaderInfo>("Barack Obama");
+            Assert.AreEqual(2009, leader.Date);
+            Assert.AreEqual("President", leader.Title);
+        }
+
+        [TestMethod]
+        public void QueryAbout()
+        {
+            var answer = Model.QueryAbout(Text, "what is the name of the city where was obama born");
             Assert.AreEqual("honolulu", answer.ToLower());
         }
 
         [TestMethod]
-        public void Answer_Collection_Objects()
+        public void Query_Collection_Objects()
         {
-            var results = Forecast.Answer<int>(Model, "What is the temperature difference as an integer?");
+            var results = Forecast.QueryAboutEach<int>(Model, "What is the temperature difference as an integer?");
             for(int i=0; i < Forecast.Count;i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);
@@ -82,11 +113,11 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Answer_Collection_Strings()
+        public void QueryAbout_Collection_Strings()
         {
             var results = Forecast
                 .Summarize(Model)
-                .Answer<int>(Model, "What is the temperature difference as an integer with no units?");
+                .QueryAboutEach<int>(Model, "What is the temperature difference as an integer with no units?");
             for (int i = 0; i < Forecast.Count; i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);

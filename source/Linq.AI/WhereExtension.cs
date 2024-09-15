@@ -21,8 +21,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>true/false</returns>
-        public static bool Matches(this object source, ITransformer model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItem<bool>(model, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
+        public static bool Matches(this ITransformer model, object source, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItem<bool>(source, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
 
         /// <summary>
         /// Determine if text matches goal
@@ -33,8 +33,8 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>true/false</returns>
-        public static Task<bool> MatchesAsync(this object source, ITransformer model, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
-            => source.TransformItemAsync<bool>(model, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
+        public static Task<bool> MatchesAsync(this ITransformer model, object source, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<bool>(source, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
 
         /// <summary>
         /// Determine if items matches goal
@@ -51,7 +51,7 @@ namespace Linq.AI
         {
             var count = source.Count();
             return source.WhereParallelAsync((item, index, ct) => 
-                item!.MatchesAsync(model, constraint, Utils.GetItemIndexClause(index, count, instructions), cancellationToken), 
+                model.MatchesAsync(item!, constraint, Utils.GetItemIndexClause(index, count, instructions), cancellationToken), 
                 maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken: cancellationToken);
         }
     }
