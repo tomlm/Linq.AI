@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>2.0.5</Version>
-    <AssemblyVersion>2.0.5.0</AssemblyVersion>
+    <Version>2.0.6</Version>
+    <AssemblyVersion>2.0.6.0</AssemblyVersion>
     <Description>Linq.AI ITransformer using OpenAI structured output.</Description>
     <Company>Iciclecreek</Company>
     <Authors>Tom Laird-McConnell</Authors>
