@@ -117,25 +117,11 @@ The object extensions use the ITransformer model to work each item in a collecti
 | ***.Select()*** | Transforms each item into another format with natural language. |
 | ***.Where()*** | Keeps each item which matches with natural language filter. |
 | ***.Remove()*** | Remove each item which matches a natural language filter. |
-| ***.Summarize()*** | Create a summarization for each item. |
 | ***.Classify()*** | Classify each item. |
-| ***.QueryAboutEach()*** | Answers the question for each item. |
+| ***.Summarize()*** | Create a summarization for each item. |
+| ***.QueryAboutEach()*** | Gets the question to a question about each item. |
 
 > NOTE: These methods internally run AI calls as throttled parallel background tasks.
-
-## enumerable.Classify() 
-This allows you to classify each item using a model;
-```csharp
-enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classifiedItems = items.Classify<Genres>(model);
-```
-
-## enumerable.Where()/enumerable.Remove() 
-Filter a collection using natural language
-```csharp
-var smallItems = items.Where(model, "item would fit in a bread box");
-var bigItems = items.Remove(model, "item would fit in a bread box");
-```
 
 ## enumerable.Select() 
 .Select() let's you transform the source into target using an ITransformer model.
@@ -155,6 +141,22 @@ var markdownItems = items.Select(model,	goal: """"
 					{{DESCRIPTION}}
 					""");
 ```
+
+## enumerable.Where()/enumerable.Remove() 
+Filter a collection using natural language
+```csharp
+var smallItems = items.Where(model, "item would fit in a bread box");
+var bigItems = items.Remove(model, "item would fit in a bread box");
+```
+
+
+## enumerable.Classify() 
+This allows you to classify each item using a model;
+```csharp
+enum Genres { Rock, Pop, Electronica, Country, Classical };
+var classifiedItems = items.Classify<Genres>(model);
+```
+
 
 ## enumerable.Summarize() 
 Generate text summary for each item using an ITransformer model.
@@ -180,7 +182,7 @@ The ITransformer implements the core primatives for using AI to manipulate gener
 | Extension | Description | 
 | ----------| ------------|
 | ***.Generate()/.GenerateAsync()*** | use a model and a goal to return a shaped result. |
-| ***.TransformItem()/.TransformItemAsync()*** | use a model and a goal to transform an item into  a shaped result. |
+| ***.TransformItem()/.TransformItemAsync()*** | use a model and a goal to transform an item into a shaped result. |
 | ***.TransformItems()*** | use a model and a goal to transform a collection of items into a collection of shaped results. |
 
 ## transformer.Generate()
