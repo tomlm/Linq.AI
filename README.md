@@ -21,7 +21,7 @@ var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>");
 > NOTE: The model must support structured output.
 
 # Model Extensions
-The model extensions use the ITransformer model to work with a single item (aka text, object, etc.).
+The model extensions for the ITransformer model to work with a single item (aka text, object, etc.).
 
 | Extension | Description | 
 | ----------| ------------|
