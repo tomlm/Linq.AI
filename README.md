@@ -31,6 +31,7 @@ The model extensions use the ITransformer model to work with a single item (aka 
 | ***.Query()/.QueryAsync()*** | get the answer to a global question using a model. |
 | ***.QueryAbout()/.QueryAboutAsync()*** | get the answer to a question from the text using a model. |
 | ***.Select()/.SelectAsync()*** | Select a collection of items from the text using a model. |
+| ***.Compare()/.CompareAsync()*** | Compare 2 objects for semantic equivelancy |
 
 ## model.Classify() 
 Classify an item using an enumeration or list of categories.
@@ -84,6 +85,28 @@ public class HREF
 	public string Title {get;set;}
 }
 var summary = model.Select<HREF>(item);
+```
+
+## model.Compare()
+Compares two objects for semantic equivelancy.
+
+```csharp
+Assert.IsTrue(Model.Compare("fourteen", "14"));
+Assert.IsTrue(Model.Compare("fourteen years old", "10 + 4 years"));
+Assert.IsTrue(Model.Compare("Me llamo Tom", "Mi nombre es Tom"));
+Assert.IsTrue(Model.Compare("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
+Assert.IsFalse(Model.Compare("Me llamo Tom", "Mi padre es Tom"));
+Assert.IsTrue(await Model.CompareAsync(
+	new 
+	{ 
+	    Introduction = "My name is Tom", 
+	    Background="I live in Kirkland, Washington"
+	},
+	new
+	{
+	    Introduction = "I'm Tom",
+	    Background = "I'm from Kirkland, Washington"
+	}));
 ```
 
 # Linq Extensions 
