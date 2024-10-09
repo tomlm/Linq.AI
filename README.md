@@ -59,7 +59,7 @@ if (model.Matches(item, "there is date"))
 Ask a question using models knowledge.
 
 ```csharp
-var answer = model.Query(item, "what is the birthday of barack obama?");
+var answer = model.Query("what is the birthday of barack obama?");
 ```
 
 ## model.QueryAbout() 
