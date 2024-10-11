@@ -1,4 +1,5 @@
 using Iciclecreek.Async;
+using OpenAI.Chat;
 using System;
 using System.Diagnostics;
 
@@ -8,14 +9,14 @@ namespace Linq.AI.OpenAI.Tests
     [TestClass]
     public class TransformationTests : UnitTestBase
     {
-    
+
         [TestMethod]
         public async Task Transform_String2String()
         {
             var source = "My name is Tom.";
             var transformation = Model.TransformItem<string>(source, "into spanish");
             Assert.IsTrue(Model.Compare("Me llamo Tom.", transformation!));
-            
+
             transformation = await Model.TransformItemAsync<string>(source, "into spanish");
             Assert.IsTrue(Model.Compare("Me llamo Tom.", transformation!));
         }
@@ -27,7 +28,7 @@ namespace Linq.AI.OpenAI.Tests
             var obj = Model.TransformItem<TestObject>(source);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
-            
+
             obj = await Model.TransformItemAsync<TestObject>(source);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
@@ -69,7 +70,8 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_Answer()
         {
-            Assert.IsTrue(Model.Compare("Honolulu", await Model.TransformItemAsync<string>(Text, "What town was he born in?")));
+            var result = await Model.TransformItemAsync<string>(Text, "What town was he born in?");
+            Assert.IsTrue(result.ToLower().Contains("honolulu"));
         }
 
         [TestMethod]
@@ -103,7 +105,7 @@ namespace Linq.AI.OpenAI.Tests
             var results = await Model.TransformItemAsync<Article[]>(Text);
 
             Assert.IsTrue(results.Count() > 0);
-            foreach(var result in results)
+            foreach (var result in results)
             {
                 Assert.IsNotNull(result.Title);
                 Assert.IsNotNull(result.Paragraph);
@@ -188,6 +190,55 @@ namespace Linq.AI.OpenAI.Tests
                 }
             }
 
+        }
+
+        [TestMethod]
+        public async Task Transform_Vision_UriTest()
+        {
+            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+            var result = await Model.SummarizeAsync(uri);
+            Assert.IsTrue(result.Contains("beer"));
+        }
+
+        [TestMethod]
+        public async Task Transform_Vision_UrisTest()
+        {
+            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+            var uri2 = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg");
+            var result = await Model.MatchesAsync(new { uri, uri2 }, "Are these pictures of people drinking beer?");
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task Transform_Vision_Select()
+        {
+            var uri = new Uri("https://static.vecteezy.com/system/resources/previews/001/222/391/original/blue-elegant-decorative-striped-pattern-editable-text-effect-vector.jpg");
+            var results = await Model.SelectAsync<string>(uri, "Extract all phrases from the image");
+            Assert.AreEqual("ILLUSTRATOR GRAPHIC STYLE", results[0]);
+            Assert.AreEqual("Works with text box or shape", results[1]);
+            Assert.AreEqual("Chicago", results[2]);
+            Assert.AreEqual("EASY TO USE - 100% EDITABLE", results[3]);
+            Assert.AreEqual("Open the graphic style menu and apply", results[4]);
+        }
+
+        [TestMethod]
+        public async Task Transform_PartTest()
+        {
+            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+            var data = await new HttpClient().GetByteArrayAsync(uri);
+            var result = await Model.SummarizeAsync(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), "image/jpeg"));
+            Assert.IsTrue(result.Contains("beer"));
+        }
+
+        [TestMethod]
+        public async Task Transform_PartsTest()
+        {
+            var result = await Model.MatchesAsync(new []
+            {
+                ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg")),
+                ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg"))
+            }, "Are these pictures of people drinking beer?");
+            Assert.IsTrue(result);
         }
 
         internal class TestObject

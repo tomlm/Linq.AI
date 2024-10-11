@@ -210,11 +210,14 @@ namespace Linq.AI.OpenAI
             lock (this)
             {
                 foreach (var message in messages)
-                    Debug.WriteLine(message.Content.Single().Text);
+                {
+                    foreach(var part in message.Content)
+                        Debug.WriteLine(JsonConvert.SerializeObject(part, JsonSettings));
+                }
             }
 #endif
             int retries = 2;
-            while(retries-- > 0)
+            while (retries-- > 0)
             {
                 ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, options, cancellationToken: cancellationToken);
 
@@ -282,8 +285,8 @@ namespace Linq.AI.OpenAI
                                     if (task != null)
                                     {
                                         await (Task)task;
-                                        result = task!.GetType().GetProperty("Result", BindingFlags.FlattenHierarchy | 
-                                                                                       BindingFlags.Public | 
+                                        result = task!.GetType().GetProperty("Result", BindingFlags.FlattenHierarchy |
+                                                                                       BindingFlags.Public |
                                                                                        BindingFlags.Instance)!.GetValue(task);
                                     }
                                 }
@@ -316,7 +319,7 @@ namespace Linq.AI.OpenAI
                         throw new NotImplementedException(completion.FinishReason.ToString());
                 }
             }
-            
+
             throw new Exception("Too many function calls detected!");
         }
 
@@ -344,27 +347,64 @@ namespace Linq.AI.OpenAI
         internal static SystemChatMessage GetTransformerSystemPrompt(string goal, string? instructions = null)
         {
             return new SystemChatMessage($$"""
-                    You are an expert at transforming text.
+                    You are an expert at transforming.
 
                     <GOAL>
                     {{goal}}
 
                     <INSTRUCTIONS>
-                    Given <ITEM> text transform the text using the directions in the provided <GOAL>.
+                    Transform <ITEM> using the directions in the provided <GOAL>.
                     {{instructions}}
                     """);
         }
 
         internal static UserChatMessage GetTransformerItemMessage(object item)
         {
-            if (!(item is string))
+            if (item is string)
             {
-                item = JToken.FromObject(item).ToString();
+                return new UserChatMessage($$"""
+                <ITEM>
+                {{item}}
+                """);
             }
-            return new UserChatMessage($$"""
-            <ITEM>
-            {{item}}
-            """);
+            else if (item is ChatMessageContentPart contentPart)
+            {
+                if (contentPart.Kind == ChatMessageContentPartKind.Image)
+                    return new UserChatMessage(ChatMessageContentPart.CreateTextPart("<ITEM>"), contentPart);
+                else
+                    return new UserChatMessage($$"""
+                    <ITEM>
+                    {{contentPart.Text}}
+                    """);
+            }
+            else if (item is ChatMessageContentPart[] contentParts)
+            {
+                return new UserChatMessage(contentParts);
+            }
+            else if (item is Uri uri)
+            {
+                return new UserChatMessage(ChatMessageContentPart.CreateTextPart("<ITEM>"), ChatMessageContentPart.CreateImagePart(uri));
+            }
+            else if (item is Uri[] uris)
+            {
+                List<ChatMessageContentPart> parts = new List<ChatMessageContentPart>()
+                {
+                    ChatMessageContentPart.CreateTextPart("<ITEM>")
+                };
+
+                foreach (var u in uris)
+                {
+                    parts.Add(ChatMessageContentPart.CreateImagePart(u));
+                }
+                return new UserChatMessage(parts);
+            }
+            else
+            {
+                return new UserChatMessage($$"""
+                    <ITEM>
+                    {{JToken.FromObject(item).ToString()}}
+                    """);
+            }
         }
 
     }

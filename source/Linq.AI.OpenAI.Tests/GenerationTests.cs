@@ -5,7 +5,7 @@ namespace Linq.AI.OpenAI.Tests
 
 
     [TestClass]
-    public class TransformerTests : UnitTestBase
+    public class GenerationTests : UnitTestBase
     {
 
         [TestMethod]

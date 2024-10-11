@@ -208,6 +208,31 @@ var results = items.TransformItems(model, "translate to spanish);
 // result[2] = "Una mas, por favor"
 ```
 
+## Linq.AI and Vision
+You can use Linq.AI and the model to work with images.  
+
+Simply pass a **Uri()** to an image or a **ChatMessageContentPart** for the image and 
+you can call any of the extension methods.
+
+Examples:
+```csharp
+var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+var uri2 = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg");
+
+// summarize an image uri
+var summmary = await Model.SummarizeAsync(uri);
+
+// ask a question about a group of image uris
+var matches = await Model.MatchesAsync(new [] { uri, uri2 }, "Are these pictures of people drinking beer?");
+
+// extract text out of an image uri.
+var text = await Model.SelectAsync<string>(uri, "Extract all phrases from the image");
+
+// upload and classify an image binary
+var imagePart = ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), "image/jpeg");
+var classification = await Model.ClassifyAsync<Mood>(imagePart);
+```
+
 ## Adding Tools
 Linq.AI makes it super easy to add tools to your OpenAI model. 
 There are 2 ways to do it:

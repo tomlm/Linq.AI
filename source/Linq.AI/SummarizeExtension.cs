@@ -20,7 +20,7 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions on how to summarize</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>Summarization text</returns>
-        public static string Summarize(this ITransformer model, object source,  string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+        public static string Summarize(this ITransformer model, object source, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
             => model.TransformItem<string>(source, goal ?? "summarize", instructions, cancellationToken);
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions on how to summarize</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>Summarization text</returns>
-        public static Task<string> SummarizeAsync(this ITransformer model, object source, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
+        public static Task<string> SummarizeAsync(this ITransformer model, object source, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
             => model.TransformItemAsync<string>(source, goal ?? "summarize", instructions, cancellationToken);
 
         /// <summary>
