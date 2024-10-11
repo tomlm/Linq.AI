@@ -19,7 +19,7 @@ var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>");
 > NOTE: The model must support structured output.
 
 # Model Extensions
-The model extensions use the ITransformer model to work with a single item (aka text, object, etc.).
+The model extensions add methods to the ITransformer model to work with a single item (aka text, object, etc.).
 
 | Extension | Description | 
 | ----------| ------------|
@@ -29,6 +29,7 @@ The model extensions use the ITransformer model to work with a single item (aka 
 | ***.Query()/.QueryAsync()*** | get the answer to a global question using a model. |
 | ***.QueryAbout()/.QueryAboutAsync()*** | get the answer to a question from the text using a model. |
 | ***.Select()/.SelectAsync()*** | Select a collection of items from the text using a model. |
+| ***.Compare()/.CompareAsync()*** | Compare 2 objects for semantic equivelancy |
 
 ## model.Classify() 
 Classify an item using an enumeration or list of categories.
@@ -56,7 +57,7 @@ if (model.Matches(item, "there is date"))
 Ask a question using models knowledge.
 
 ```csharp
-var answer = model.Query(item, "what is the birthday of barack obama?");
+var answer = model.Query("what is the birthday of barack obama?");
 ```
 
 ## model.QueryAbout() 
@@ -84,6 +85,28 @@ public class HREF
 var summary = model.Select<HREF>(item);
 ```
 
+## model.Compare()
+Compares two objects for semantic equivelancy.
+
+```csharp
+Assert.IsTrue(Model.Compare("fourteen", "14"));
+Assert.IsTrue(Model.Compare("fourteen years old", "10 + 4 years"));
+Assert.IsTrue(Model.Compare("Me llamo Tom", "Mi nombre es Tom"));
+Assert.IsTrue(Model.Compare("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
+Assert.IsFalse(Model.Compare("Me llamo Tom", "Mi padre es Tom"));
+Assert.IsTrue(await Model.CompareAsync(
+	new 
+	{ 
+	    Introduction = "My name is Tom", 
+	    Background="I live in Kirkland, Washington"
+	},
+	new
+	{
+	    Introduction = "I'm Tom",
+	    Background = "I'm from Kirkland, Washington"
+	}));
+```
+
 # Linq Extensions 
 The object extensions use the ITransformer model to work each item in a collections.
 
@@ -92,25 +115,11 @@ The object extensions use the ITransformer model to work each item in a collecti
 | ***.Select()*** | Transforms each item into another format with natural language. |
 | ***.Where()*** | Keeps each item which matches with natural language filter. |
 | ***.Remove()*** | Remove each item which matches a natural language filter. |
-| ***.Summarize()*** | Create a summarization for each item. |
 | ***.Classify()*** | Classify each item. |
-| ***.QueryAboutEach()*** | Answers the question for each item. |
+| ***.Summarize()*** | Create a summarization for each item. |
+| ***.QueryAboutEach()*** | Gets the question to a question about each item. |
 
 > NOTE: These methods internally run AI calls as throttled parallel background tasks.
-
-## enumerable.Classify() 
-This allows you to classify each item using a model;
-```csharp
-enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classifiedItems = items.Classify<Genres>(model);
-```
-
-## enumerable.Where()/enumerable.Remove() 
-Filter a collection using natural language
-```csharp
-var smallItems = items.Where(model, "item would fit in a bread box");
-var bigItems = items.Remove(model, "item would fit in a bread box");
-```
 
 ## enumerable.Select() 
 .Select() let's you transform the source into target using an ITransformer model.
@@ -130,6 +139,22 @@ var markdownItems = items.Select(model,	goal: """"
 					{{DESCRIPTION}}
 					""");
 ```
+
+## enumerable.Where()/enumerable.Remove() 
+Filter a collection using natural language
+```csharp
+var smallItems = items.Where(model, "item would fit in a bread box");
+var bigItems = items.Remove(model, "item would fit in a bread box");
+```
+
+
+## enumerable.Classify() 
+This allows you to classify each item using a model;
+```csharp
+enum Genres { Rock, Pop, Electronica, Country, Classical };
+var classifiedItems = items.Classify<Genres>(model);
+```
+
 
 ## enumerable.Summarize() 
 Generate text summary for each item using an ITransformer model.
@@ -155,7 +180,7 @@ The ITransformer implements the core primatives for using AI to manipulate gener
 | Extension | Description | 
 | ----------| ------------|
 | ***.Generate()/.GenerateAsync()*** | use a model and a goal to return a shaped result. |
-| ***.TransformItem()/.TransformItemAsync()*** | use a model and a goal to transform an item into  a shaped result. |
+| ***.TransformItem()/.TransformItemAsync()*** | use a model and a goal to transform an item into a shaped result. |
 | ***.TransformItems()*** | use a model and a goal to transform a collection of items into a collection of shaped results. |
 
 ## transformer.Generate()
