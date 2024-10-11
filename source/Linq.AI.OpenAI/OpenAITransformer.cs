@@ -5,7 +5,10 @@ using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Linq.AI.OpenAI
 {
@@ -58,6 +61,83 @@ namespace Linq.AI.OpenAI
 
         public float? Temperature { get; set; } = 0.0f;
 
+        public IList<ChatTool> Tools { get; } = new List<ChatTool>();
+        internal Dictionary<string, Delegate> _delegates = new Dictionary<string, Delegate>();
+
+        /// <summary>
+        /// Add all static methods on a class as tools.
+        /// </summary>
+        /// <typeparam name="ToolClassT"></typeparam>
+        /// <returns></returns>
+        public OpenAITransformer AddTools<ToolClassT>()
+            where ToolClassT : class
+        {
+            foreach (var method in typeof(ToolClassT).GetMethods(BindingFlags.Static | BindingFlags.Public))
+            {
+                var paramTypes = method.GetParameters().Select(p => p.ParameterType).ToList();
+                paramTypes.Add(method.ReturnType);
+
+                Type delegateType = Expression.GetDelegateType(paramTypes.ToArray());
+                string description = method.GetCustomAttribute<DescriptionAttribute>()?.Description ??
+                        method.GetCustomAttribute<InstructionAttribute>()?.Instruction
+                        ?? method.Name;
+                AddTool(method.Name, description, Delegate.CreateDelegate(delegateType, method, true)!);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Add Static Method as a tool.
+        /// </summary>
+        /// <param name="methodInfo"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public OpenAITransformer AddTool(string name, string description, Delegate del)
+        {
+            ArgumentNullException.ThrowIfNull(name);
+            ArgumentNullException.ThrowIfNull(description);
+            ArgumentNullException.ThrowIfNull(del);
+            var methodInfo = del.Method;
+            string toolName = (methodInfo.DeclaringType!.Name.StartsWith("<")) ? name : $"{methodInfo.DeclaringType.Name}_{name}";
+
+            JObject parmsSchema = new JObject();
+            parmsSchema["type"] = "object";
+            parmsSchema["additionalProperties"] = false;
+            parmsSchema["required"] = new JArray();
+            parmsSchema["properties"] = new JObject();
+
+            foreach (var parameter in methodInfo.GetParameters().Where(parm => parm.ParameterType != typeof(CancellationToken)))
+            {
+                ArgumentNullException.ThrowIfNull(parameter?.Name);
+
+                var parmSchema = StructuredSchemaGenerator.FromType(parameter.ParameterType);
+                bool propRequired = parameter.GetCustomAttribute<RequiredAttribute>() != null;
+
+                var instr = parameter.GetCustomAttribute<InstructionAttribute>();
+                if (instr != null)
+                {
+                    parmSchema!["description"] = instr.Instruction;
+                }
+                else
+                {
+                    var descr = parameter.GetCustomAttribute<DescriptionAttribute>();
+                    if (descr != null)
+                        parmSchema!["description"] = descr.Description;
+                }
+                parmsSchema["properties"]![parameter.Name] = parmSchema;
+
+                ((JArray)parmsSchema["required"]!).Add(parameter.Name);
+            }
+
+            var chatTool = ChatTool.CreateFunctionTool(toolName, description, BinaryData.FromString(parmsSchema.ToString()), true);
+            if (Tools.Any(t => t.FunctionName == chatTool.FunctionName))
+                throw new Exception($"{chatTool.FunctionName} is already defined!");
+
+            Tools.Add(chatTool);
+            _delegates[toolName] = del;
+            return this;
+        }
+
         /// <summary>
         /// Generate an item of shape T based on "goal"
         /// </summary>
@@ -108,29 +188,136 @@ namespace Linq.AI.OpenAI
         public async Task<ResultT> TransformItemAsync<ResultT>(object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
-            var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "Transform", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
-            ChatCompletionOptions options = new ChatCompletionOptions() 
+            var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat("Transform", jsonSchema: BinaryData.FromString(schema), jsonSchemaIsStrict: true);
+            ChatCompletionOptions options = new ChatCompletionOptions()
             {
-                ResponseFormat = responseFormat, 
-                Temperature = this.Temperature 
+                ResponseFormat = responseFormat,
+                Temperature = this.Temperature,
+                AllowParallelToolCalls = true
             };
-            var systemChatMessage = GetSystemPrompt(goal ?? "Transform", instructions);
-            var itemMessage = GetItemMessage(item);
-            ChatCompletion chatCompletion = await _chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options, cancellationToken: cancellationToken);
-            return chatCompletion.Content.Select(completion =>
+
+            foreach (var tool in Tools)
+                options.Tools.Add(tool);
+
+            List<ChatMessage> messages = new List<ChatMessage>()
             {
+                GetTransformerSystemPrompt(goal ?? "Transform", instructions),
+                GetTransformerItemMessage(item),
+            };
+
+            Debug.WriteLine("===============================================");
 #if DEBUG
-                lock (this)
-                {
-                    Debug.WriteLine("===============================================");
-                    Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                    Debug.WriteLine(itemMessage.Content.Single().Text);
-                    Debug.WriteLine(completion.Text);
-                }
+            lock (this)
+            {
+                foreach (var message in messages)
+                    Debug.WriteLine(message.Content.Single().Text);
+            }
 #endif
-                var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text, JsonSettings)!;
-                return transformation.Result!;
-            }).Single()!;
+            int retries = 2;
+            while(retries-- > 0)
+            {
+                ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, options, cancellationToken: cancellationToken);
+
+                switch (completion.FinishReason)
+                {
+                    case ChatFinishReason.Stop:
+                        // Add the assistant message to the conversation history.
+                        // messages.Add(new AssistantChatMessage(completion));
+                        return completion.Content.Select(completion =>
+                        {
+#if DEBUG
+                            lock (this)
+                            {
+                                Debug.WriteLine(completion.Text);
+                            }
+#endif
+                            var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text, JsonSettings)!;
+                            return transformation.Result!;
+                        }).Single()!;
+
+                    case ChatFinishReason.ToolCalls:
+                        {
+                            // new options with no tools
+                            // we only allow tools to be called once to prevent infinite tool invocation
+                            // situations.
+                            options = new ChatCompletionOptions()
+                            {
+                                ResponseFormat = responseFormat,
+                                Temperature = this.Temperature
+                            };
+
+                            // First, add the assistant message with tool calls to the conversation history.
+                            messages.Add(new AssistantChatMessage(completion));
+
+                            // Then, add a new tool message for each tool call that is resolved.
+                            completion.ToolCalls.ForEachParallelAsync(async (toolCall, index, ct) =>
+                            {
+                                if (!this._delegates.TryGetValue(toolCall.FunctionName, out var del))
+                                    throw new Exception($"Unknown function {toolCall.FunctionName}");
+
+                                List<object> args = new List<object>();
+                                var input = !String.IsNullOrEmpty(toolCall.FunctionArguments.ToString()) ? JObject.Parse(toolCall.FunctionArguments.ToString()) : new JObject();
+                                foreach (var parameter in del.Method.GetParameters())
+                                {
+                                    if (parameter.ParameterType == typeof(CancellationToken))
+                                    {
+                                        args.Add(ct);
+                                    }
+                                    else
+                                    {
+                                        var val = input[parameter.Name!]?.ToObject(parameter.ParameterType) ?? parameter.DefaultValue;
+                                        args.Add(val!);
+                                    }
+                                }
+
+                                // call function()
+                                object? result = null;
+                                if (del.Method.ReturnType.Name == "Task")
+                                {
+                                    await (Task)del.DynamicInvoke(args.ToArray<object?>())!;
+                                }
+                                else if (del.Method.ReturnType.Name == "Task`1")
+                                {
+                                    var task = (Task)del.DynamicInvoke(args.ToArray<object?>())!;
+                                    if (task != null)
+                                    {
+                                        await (Task)task;
+                                        result = task!.GetType().GetProperty("Result", BindingFlags.FlattenHierarchy | 
+                                                                                       BindingFlags.Public | 
+                                                                                       BindingFlags.Instance)!.GetValue(task);
+                                    }
+                                }
+                                else
+                                {
+                                    result = del.DynamicInvoke(args.ToArray<object?>());
+                                }
+
+                                lock (messages)
+                                {
+                                    if (result != null && result is string s)
+                                        messages.Add(new ToolChatMessage(toolCall.Id, s));
+                                    else
+                                        messages.Add(new ToolChatMessage(toolCall.Id, JToken.FromObject(result ?? String.Empty).ToString()));
+                                }
+                            });
+                        }
+                        break;
+
+                    case ChatFinishReason.Length:
+                        throw new NotImplementedException("Incomplete model output due to MaxTokens parameter or token limit exceeded.");
+
+                    case ChatFinishReason.ContentFilter:
+                        throw new NotImplementedException("Omitted content due to a content filter flag.");
+
+                    case ChatFinishReason.FunctionCall:
+                        throw new NotImplementedException("Deprecated in favor of tool calls.");
+
+                    default:
+                        throw new NotImplementedException(completion.FinishReason.ToString());
+                }
+            }
+            
+            throw new Exception("Too many function calls detected!");
         }
 
         /// <summary>
@@ -149,41 +336,13 @@ namespace Linq.AI.OpenAI
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
             var count = source.Count();
 
-            return source.SelectParallelAsync(async (item, index, ct) =>
-            {
-                var itemResult = item;
-                var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat(name: "transform", jsonSchema: BinaryData.FromString(schema), strictSchemaEnabled: true);
-                ChatCompletionOptions options = new ChatCompletionOptions()
-                {
-                    ResponseFormat = responseFormat,
-                    Temperature = this.Temperature
-                };
-                var systemChatMessage = GetSystemPrompt(goal ?? "transform the item to the output schema", instructions!, index, count);
-                var itemMessage = GetItemMessage(itemResult!);
-                ChatCompletion chatCompletion = await _chatClient.CompleteChatAsync([systemChatMessage, itemMessage], options, ct);
-                return chatCompletion.Content.Select(completion =>
-                {
-#if DEBUG
-                    lock (this)
-                    {
-                        Debug.WriteLine("===============================================");
-                        Debug.WriteLine(systemChatMessage.Content.Single().Text);
-                        Debug.WriteLine(itemMessage.Content.Single().Text);
-                        Debug.WriteLine(completion.Text);
-                    }
-#endif
-                    var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text, JsonSettings)!;
-                    return transformation.Result;
-                }).Single()!;
-            }, maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken);
+            return source.SelectParallelAsync((item, index, ct) =>
+                    TransformItemAsync<ResultT>(item, goal, Utils.GetItemIndexClause((int)index, (int)count, instructions), cancellationToken),
+                    maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken);
         }
 
-        internal static SystemChatMessage GetSystemPrompt(string goal, string? instructions = null, int? index = null, int? count = null)
+        internal static SystemChatMessage GetTransformerSystemPrompt(string goal, string? instructions = null)
         {
-            if (index != null && count != null)
-            {
-                instructions = Utils.GetItemIndexClause((int)index, (int)count, instructions);
-            }
             return new SystemChatMessage($$"""
                     You are an expert at transforming text.
 
@@ -196,7 +355,7 @@ namespace Linq.AI.OpenAI
                     """);
         }
 
-        internal static UserChatMessage GetItemMessage(object item)
+        internal static UserChatMessage GetTransformerItemMessage(object item)
         {
             if (!(item is string))
             {

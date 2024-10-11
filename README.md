@@ -1,8 +1,6 @@
 # Linq.AI
 This library adds Linq extension methods which use AI models to transform and manipulate data.
 
-> This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
-
 ## Installation
 ```
 dotnet add package Linq.AI
@@ -14,7 +12,7 @@ The Linq.AI package needs an ITransformer for the AI model that is being used.
 
 Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI
 
-And then instantiate a transformer like this:
+You instantiate a transformer like this:
 ```csharp
 var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>");
 ```
@@ -185,6 +183,49 @@ var results = items.TransformItems(model, "translate to spanish);
 // result[2] = "Una mas, por favor"
 ```
 
+## Adding Tools
+Linq.AI makes it super easy to add tools to your OpenAI model. 
+There are 2 ways to do it:
+* Define a static class with static methods on it
+* Create a Delegate 
+
+If the model decides it needs the result of your function Liqn.AI will automatically invoke the function doing all of the 
+type wrangling needed and then pass the result back to the model to use to create the final answer.
+
+> NOTE: Delegates can be synchronous or async.
+ 
+```csharp
+public static class MyFunctions
+{
+    [Description("Perform PowPow calculation")]
+    public static double PowPow(  [Description("first number")][Required] double x, 
+                                  [Description("second number")][Required] double y)
+    {
+        return Math.Pow(x,y);
+    }
+}
+
+var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>")
+    .AddTools<MyFunctions>()
+    .AddTool("Sum", "Add 2 numbers", 
+        ([Description("the first number to add") int x, 
+         [Description("the second number to add") int y) 
+        {
+            return x+y;
+        })
+    .AddTool("LookupAlbumCover", "Lookup up a record album covere", 
+        async ([Description("the album name") string name, CancellationToken ct) => 
+        {
+            await Task.Delay(1000);
+            return result;
+        });
+```
+
+Now if query needs the result of the function it will just work
+```csharp
+    model.Generate<double>("What's the powpow for 3 and 4?");
+```
+
 # InstructionAttribute
 You can add [Description] or [Instruction] attributes to properties on you classes to help the LLM properly work with your objects when
 the property name is amibiguious.
@@ -232,3 +273,6 @@ For example, here is the implementation of Summarize():
             => model.TransformItems<string>(source, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
     }
 ```
+
+> This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
+

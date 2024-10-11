@@ -1,8 +1,59 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OpenAI.Chat;
+using System.ClientModel;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection.Metadata.Ecma335;
+using DescriptionAttribute = System.ComponentModel.DescriptionAttribute;
 
 namespace Linq.AI.OpenAI.Tests
 {
+    public enum TemperatureUnits { Celsius, Farenheit };
+
+    public class MyFunctions
+    {
+        [Instruction("Perform magic calculation")]
+        public static double MagicMath([Description("first number")][Required] double x, [Description("second number")][Required] double y)
+            => Math.Pow(x,y);
+
+
+        [Description("Lookup weather for a location")]
+        public static async Task<WeatherReport> GetWeatherForLocation([Required] string location, TemperatureUnits? unit, CancellationToken ct=default)
+        {
+            await Task.Delay(100);
+            if (unit == null || unit == TemperatureUnits.Farenheit)
+            {
+                return new WeatherReport()
+                {
+                    Location = location,
+                    Temperature = 100.0f,
+                    Unit = TemperatureUnits.Farenheit
+                };
+            }
+            else
+            {
+                return new WeatherReport()
+                {
+                    Location = location,
+                    Temperature = 37.0f,
+                    Unit = TemperatureUnits.Celsius
+                };
+            }
+        }
+    }
+
+    public class TestContact
+    {
+        public string Name { get; set; }
+        public string HomeTown { get; set; }
+    }
+
+    public class WeatherReport
+    {
+        public string Location { get; set; }
+        public float Temperature { get; set; }
+        public TemperatureUnits Unit { get; set; }
+    }
+
     public class UnitTestBase
     {
         private static Lazy<ITransformer> transformer = new Lazy<ITransformer>(() =>
@@ -10,7 +61,17 @@ namespace Linq.AI.OpenAI.Tests
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()
                 .Build();
-            return new OpenAITransformer(model: "gpt-4o-mini", config["OpenAIKey"]);
+            return new OpenAITransformer(model: "gpt-4o-mini", new ApiKeyCredential(config["OpenAIKey"]))
+                .AddTools<MyFunctions>()
+                .AddTool("LookupContact", "lookup a contact record for a person", async (string name, CancellationToken ct) =>
+                {
+                    await Task.Delay(500);
+                    return new TestContact()
+                    {
+                        Name = "John Smith III",
+                        HomeTown = "Atlanta"
+                    };
+                });
         });
 
         public static ITransformer Model
