@@ -63,15 +63,17 @@ namespace Linq.AI.OpenAI.Tests
                 .Build();
             return new OpenAITransformer(model: "gpt-4o-mini", new ApiKeyCredential(config["OpenAIKey"]))
                 .AddTools<MyFunctions>()
-                .AddTool("LookupContact", "lookup a contact record for a person", async (string name, CancellationToken ct) =>
-                {
-                    await Task.Delay(500);
-                    return new TestContact()
+                .AddTool("LookupContact", "lookup a contact record for a person", 
+                    async (string name, CancellationToken ct) =>
                     {
-                        Name = "John Smith III",
-                        HomeTown = "Atlanta"
-                    };
-                });
+                        await Task.Delay(500);
+                        return new TestContact()
+                        {
+                            Name = "John Smith III",
+                            HomeTown = "Atlanta"
+                        };
+                    }
+                );
         });
 
         public static ITransformer Model
