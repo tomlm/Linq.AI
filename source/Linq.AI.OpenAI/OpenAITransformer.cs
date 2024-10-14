@@ -59,8 +59,14 @@ namespace Linq.AI.OpenAI
             _chatClient = chatClient;
         }
 
+        /// <summary>
+        /// Temperature to use.
+        /// </summary>
         public float? Temperature { get; set; } = 0.0f;
 
+        /// <summary>
+        /// Tool registrations
+        /// </summary>
         public IList<ChatTool> Tools { get; } = new List<ChatTool>();
         internal Dictionary<string, Delegate> _delegates = new Dictionary<string, Delegate>();
 
