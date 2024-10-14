@@ -10,27 +10,28 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "dog", "caterpillar", "airplane", "chair"];
 
-            var results = items.Remove(Model, "things you can travel on");
-            Assert.IsFalse(results.Contains("horse"));
-            Assert.IsFalse(results.Contains("airplane"));
-            Assert.IsTrue(results.Contains("dog"));
-            Assert.IsTrue(results.Contains("caterpillar"));
+            var results = items.Remove(Model, "things that are alive");
             Assert.IsTrue(results.Contains("chair"));
+            Assert.IsTrue(results.Contains("airplane"));
+            Assert.IsFalse(results.Contains("horse"));
+            Assert.IsFalse(results.Contains("dog"));
+            Assert.IsFalse(results.Contains("caterpillar"));
         }
 
         [TestMethod]
         public void Remove_Objects()
         {
+            var rnd = new Random();
             string[] items = ["horse", "dog", "caterpillar", "airplane", "chair"];
-            var list = items.Select(item => new { Name = item }).ToList();
+            var list = items.Select(item => new { Name = item, Age = rnd.Next(1, 100) }).ToList();
 
-            var results = list.Remove(Model, "it is something you can ride");
+            var results = list.Remove(Model, "things that are alive");
 
-            Assert.IsFalse(results.Any(item => item.Name == "horse"));
-            Assert.IsFalse(results.Any(item => item.Name == "airplane"));
-            Assert.IsTrue(results.Any(item => item.Name == "dog"));
-            Assert.IsTrue(results.Any(item => item.Name == "caterpillar"));
             Assert.IsTrue(results.Any(item => item.Name == "chair"));
+            Assert.IsTrue(results.Any(item => item.Name == "airplane"));
+            Assert.IsFalse(results.Any(item => item.Name == "dog"));
+            Assert.IsFalse(results.Any(item => item.Name == "caterpillar"));
+            Assert.IsFalse(results.Any(item => item.Name == "horse"));
         }
     }
 }

@@ -19,13 +19,13 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Where_Strings()
         {
-            string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
+            string[] items = ["horse", "thumb tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(Model, "you can ride on or in it");
+            var results = items.Where(Model, "it is alive");
             Assert.IsTrue(results.Contains("horse"));
-            Assert.IsTrue(results.Contains("airplane"));
+            Assert.IsFalse(results.Contains("airplane"));
             Assert.IsFalse(results.Contains("tack"));
-            Assert.IsFalse(results.Contains("caterpillar"));
+            Assert.IsTrue(results.Contains("caterpillar"));
             Assert.IsFalse(results.Contains("sandwich"));
         }
 
@@ -34,11 +34,11 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Select(item => new { Name = item }).Where(Model, "you can ride on or in it");
+            var results = items.Select(item => new { Name = item }).Where(Model, "it is alive");
             Assert.IsTrue(results.Any(item => item.Name == "horse"));
             Assert.IsFalse(results.Any(item => item.Name == "tack"));
-            Assert.IsTrue(results.Any(item => item.Name == "airplane"));
-            Assert.IsFalse(results.Any(item => item.Name == "caterpillar"));
+            Assert.IsFalse(results.Any(item => item.Name == "airplane"));
+            Assert.IsTrue(results.Any(item => item.Name == "caterpillar"));
             Assert.IsFalse(results.Any(item => item.Name == "sandwich"));
         }
 

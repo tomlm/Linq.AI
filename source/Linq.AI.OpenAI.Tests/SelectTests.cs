@@ -65,7 +65,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Select_Text_Object()
         {
-            var results = Model.Select<Article>(Text);
+            var results = Model.Select<Article>(Text, "turn each section into an article");
 
             Assert.IsTrue(results.Count > 1);
             foreach(var result in results)
@@ -74,7 +74,7 @@ namespace Linq.AI.OpenAI.Tests
                 Assert.IsNotNull(result.Paragraph);
             }
 
-            results = await Model.SelectAsync<Article>(Text);
+            results = await Model.SelectAsync<Article>(Text, "turn each section in an article");
 
             Assert.IsTrue(results.Count > 1);
             foreach (var result in results)

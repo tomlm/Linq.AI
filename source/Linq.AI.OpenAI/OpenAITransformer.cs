@@ -189,29 +189,29 @@ namespace Linq.AI.OpenAI
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat("Transform", jsonSchema: BinaryData.FromString(schema), jsonSchemaIsStrict: true);
-            ChatCompletionOptions options = new ChatCompletionOptions()
+            var context = new CompletionContext()
             {
-                ResponseFormat = responseFormat,
-                Temperature = this.Temperature,
-                AllowParallelToolCalls = true
+                Options = new ChatCompletionOptions()
+                {
+                    ResponseFormat = responseFormat,
+                    Temperature = this.Temperature,
+                    AllowParallelToolCalls = true
+                }
             };
 
             foreach (var tool in Tools)
-                options.Tools.Add(tool);
+                context.Options.Tools.Add(tool);
 
-            List<ChatMessage> messages = new List<ChatMessage>()
-            {
-                GetTransformerSystemPrompt(goal ?? "Transform", instructions),
-                GetTransformerItemMessage(item),
-            };
+            context.Messages.Add(GetTransformerSystemPrompt(goal ?? "Transform", instructions));
+            context.Messages.Add(GetTransformerItemMessage(item));
 
             Debug.WriteLine("===============================================");
 #if DEBUG
             lock (this)
             {
-                foreach (var message in messages)
+                foreach (var message in context.Messages)
                 {
-                    foreach(var part in message.Content)
+                    foreach (var part in message.Content)
                         Debug.WriteLine(JsonConvert.SerializeObject(part, JsonSettings));
                 }
             }
@@ -219,22 +219,22 @@ namespace Linq.AI.OpenAI
             int retries = 2;
             while (retries-- > 0)
             {
-                ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, options, cancellationToken: cancellationToken);
+                context.Result = await _chatClient.CompleteChatAsync(context.Messages, context.Options, cancellationToken: cancellationToken);
 
-                switch (completion.FinishReason)
+                switch (context.Completion.FinishReason)
                 {
                     case ChatFinishReason.Stop:
                         // Add the assistant message to the conversation history.
                         // messages.Add(new AssistantChatMessage(completion));
-                        return completion.Content.Select(completion =>
+                        return context.Completion.Content.Select(content =>
                         {
 #if DEBUG
                             lock (this)
                             {
-                                Debug.WriteLine(completion.Text);
+                                Debug.WriteLine(content.Text);
                             }
 #endif
-                            var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(completion.Text, JsonSettings)!;
+                            var transformation = JsonConvert.DeserializeObject<Transformation<ResultT>>(content.Text, JsonSettings)!;
                             return transformation.Result!;
                         }).Single()!;
 
@@ -243,17 +243,17 @@ namespace Linq.AI.OpenAI
                             // new options with no tools
                             // we only allow tools to be called once to prevent infinite tool invocation
                             // situations.
-                            options = new ChatCompletionOptions()
+                            context.Options = new ChatCompletionOptions()
                             {
                                 ResponseFormat = responseFormat,
                                 Temperature = this.Temperature
                             };
 
                             // First, add the assistant message with tool calls to the conversation history.
-                            messages.Add(new AssistantChatMessage(completion));
+                            context.Messages.Add(new AssistantChatMessage(context.Completion));
 
                             // Then, add a new tool message for each tool call that is resolved.
-                            completion.ToolCalls.ForEachParallelAsync(async (toolCall, index, ct) =>
+                            context.Completion.ToolCalls.ForEachParallelAsync(async (toolCall, index, ct) =>
                             {
                                 if (!this._delegates.TryGetValue(toolCall.FunctionName, out var del))
                                     throw new Exception($"Unknown function {toolCall.FunctionName}");
@@ -265,6 +265,10 @@ namespace Linq.AI.OpenAI
                                     if (parameter.ParameterType == typeof(CancellationToken))
                                     {
                                         args.Add(ct);
+                                    }
+                                    else if (parameter.ParameterType == typeof(CompletionContext))
+                                    {
+                                        args.Add(context);
                                     }
                                     else
                                     {
@@ -295,12 +299,14 @@ namespace Linq.AI.OpenAI
                                     result = del.DynamicInvoke(args.ToArray<object?>());
                                 }
 
-                                lock (messages)
+                                lock (context)
                                 {
+                                    context.ToolResults[toolCall.Id] = result;
+
                                     if (result != null && result is string s)
-                                        messages.Add(new ToolChatMessage(toolCall.Id, s));
+                                        context.Messages.Add(new ToolChatMessage(toolCall.Id, s));
                                     else
-                                        messages.Add(new ToolChatMessage(toolCall.Id, JToken.FromObject(result ?? String.Empty).ToString()));
+                                        context.Messages.Add(new ToolChatMessage(toolCall.Id, JToken.FromObject(result ?? String.Empty).ToString()));
                                 }
                             });
                         }
@@ -316,7 +322,7 @@ namespace Linq.AI.OpenAI
                         throw new NotImplementedException("Deprecated in favor of tool calls.");
 
                     default:
-                        throw new NotImplementedException(completion.FinishReason.ToString());
+                        throw new NotImplementedException(context.Completion.FinishReason.ToString());
                 }
             }
 
