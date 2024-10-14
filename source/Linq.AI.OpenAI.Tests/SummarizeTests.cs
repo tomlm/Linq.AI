@@ -21,7 +21,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Summarize_String()
         {
-            var summarization = Model.Summarize(Text, "2 words");
+            var summarization = GetModel().Summarize(Text, "2 words");
             foreach(var summary in summarization)
             {
                 Debug.WriteLine(summarization);
@@ -30,7 +30,7 @@ namespace Linq.AI.OpenAI.Tests
             Assert.IsTrue(summarization.Contains("Hope"));
             Assert.IsTrue(summarization.Contains("Change"));
             
-            summarization = await Model.SummarizeAsync(Text, "2 words");
+            summarization = await GetModel().SummarizeAsync(Text, "2 words");
             foreach (var summary in summarization)
             {
                 Debug.WriteLine(summarization);
@@ -44,13 +44,13 @@ namespace Linq.AI.OpenAI.Tests
         public void Summarize_Strings()
         {
             var docs = GetDocs();
-            foreach (var result in docs.Summarize(Model))
+            foreach (var result in docs.Summarize(GetModel()))
             {
                 Debug.WriteLine(result);
                 Assert.IsNotNull(result);
             }
 
-            foreach (var result in docs.Summarize(Model, "Create a 3 bullet summary"))
+            foreach (var result in docs.Summarize(GetModel(), "Create a 3 bullet summary"))
             {
                 Debug.WriteLine(result);
                 Assert.IsNotNull(result);
@@ -61,7 +61,7 @@ namespace Linq.AI.OpenAI.Tests
         public void Summarize_Objects()
         {
             var docs = GetDocs().Select(markdown => new TestObject() { Name = markdown }).ToList();
-            foreach (var result in docs.Summarize(Model))
+            foreach (var result in docs.Summarize(GetModel()))
             {
                 Debug.WriteLine(result);
                 Assert.IsNotNull(result);

@@ -8,17 +8,17 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Compare_Strings_Semantically()
         {
-            Assert.IsTrue(Model.Compare("fourteen", "14"));
-            Assert.IsTrue(Model.Compare("fourteen years old", "10 + 4 years"));
-            Assert.IsTrue(Model.Compare("Me llamo Tom", "Mi nombre es Tom"));
-            Assert.IsTrue(Model.Compare("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
-            Assert.IsFalse(Model.Compare("Me llamo Tom", "Mi padre es Tom"));
+            Assert.IsTrue(GetModel().Compare("fourteen", "14"));
+            Assert.IsTrue(GetModel().Compare("fourteen years old", "10 + 4 years"));
+            Assert.IsTrue(GetModel().Compare("Me llamo Tom", "Mi nombre es Tom"));
+            Assert.IsTrue(GetModel().Compare("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
+            Assert.IsFalse(GetModel().Compare("Me llamo Tom", "Mi padre es Tom"));
         }
 
         [TestMethod]
         public async Task Compare_Objects_Semantically()
         {
-            Assert.IsTrue(await Model.CompareAsync(
+            Assert.IsTrue(await GetModel().CompareAsync(
                 new 
                 { 
                     Introduction = "My name is Tom", 

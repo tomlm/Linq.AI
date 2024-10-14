@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using DescriptionAttribute = System.ComponentModel.DescriptionAttribute;
 
 namespace Linq.AI.OpenAI.Tests
 {
@@ -11,21 +12,21 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Generate_Text()
         {
-            var results = Model.Generate("a haiku about camping", "it must have the word camp, campfire or camping in it");
+            var results = GetModel().Generate("a haiku about camping", "it must have the word camp, campfire or camping in it");
             Assert.IsTrue(results.ToLower().Contains("camp"));
         }
 
         [TestMethod]
         public void Generate_Object()
         {
-            var result = Model.Generate<CityObject>("a city object for Ames, Iowa");
+            var result = GetModel().Generate<CityObject>("a city object for Ames, Iowa");
             Assert.AreEqual("Ames", result.Name);
         }
 
         [TestMethod]
         public async Task Generate_Collection_Text()
         {
-            var results = await Model.GenerateAsync<string[]>("return the top 5 largest cities in the world");
+            var results = await GetModel().GenerateAsync<string[]>("return the top 5 largest cities in the world");
             Assert.IsTrue(results.Any(item => item.Contains("Mexico City")));
             Assert.AreEqual(5, results.Count());
         }
@@ -33,7 +34,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Generate_Collection_Text2()
         {
-            var results = await Model.GenerateAsync<string[]>("a list of funny names for people named bob");
+            var results = await GetModel().GenerateAsync<string[]>("a list of funny names for people named bob");
             foreach(var result in results)
             {
                 Assert.IsTrue(result.ToLower().Contains("bob"));
@@ -45,7 +46,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void Generate_Collections_Object()
         {
-            var generated = Model.Generate<CityObject[]>("return the top 5 largest cities in the world.");
+            var generated = GetModel().Generate<CityObject[]>("return the top 5 largest cities in the world.");
             Assert.IsTrue(generated.Any(item => item.Name == "Mexico City" && item.Country == "Mexico" ));
             Assert.AreEqual(5, generated.Count());
         }
@@ -53,8 +54,8 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transformer_StringDefault()
         {
-            Assert.AreEqual("tset", Model.TransformItem("test", "reverse letters"));
-            Assert.AreEqual("tset", await Model.TransformItemAsync("test", "reverse letters"));
+            Assert.AreEqual("tset", GetModel().TransformItem("test", "reverse letters"));
+            Assert.AreEqual("tset", await GetModel().TransformItemAsync("test", "reverse letters"));
         }
 
     }

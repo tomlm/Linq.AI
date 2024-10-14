@@ -67,8 +67,10 @@ namespace Linq.AI.OpenAI
         /// <summary>
         /// Tool registrations
         /// </summary>
-        public IList<ChatTool> Tools { get; } = new List<ChatTool>();
-        internal Dictionary<string, Delegate> _delegates = new Dictionary<string, Delegate>();
+        public IList<ChatTool> ChatTools { get; } = new List<ChatTool>();
+
+        // map of tool name to the delegate
+        private Dictionary<string, ToolDefinition> _tools = new Dictionary<string, ToolDefinition>();
 
         /// <summary>
         /// Add all static methods on a class as tools.
@@ -87,7 +89,8 @@ namespace Linq.AI.OpenAI
                 string description = method.GetCustomAttribute<DescriptionAttribute>()?.Description ??
                         method.GetCustomAttribute<InstructionAttribute>()?.Instruction
                         ?? method.Name;
-                AddTool(method.Name, description, Delegate.CreateDelegate(delegateType, method, true)!);
+                var priorityGroup = method.GetCustomAttribute<PriorityGroupAttribute>()?.Group ?? 0;
+                AddTool(method.Name, description, Delegate.CreateDelegate(delegateType, method, true)!, priorityGroup);
             }
             return this;
         }
@@ -98,7 +101,7 @@ namespace Linq.AI.OpenAI
         /// <param name="methodInfo"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public OpenAITransformer AddTool(string name, string description, Delegate del)
+        public OpenAITransformer AddTool(string name, string description, Delegate del, int priorityGroup = 0)
         {
             ArgumentNullException.ThrowIfNull(name);
             ArgumentNullException.ThrowIfNull(description);
@@ -136,11 +139,11 @@ namespace Linq.AI.OpenAI
             }
 
             var chatTool = ChatTool.CreateFunctionTool(toolName, description, BinaryData.FromString(parmsSchema.ToString()), true);
-            if (Tools.Any(t => t.FunctionName == chatTool.FunctionName))
+            if (ChatTools.Any(t => t.FunctionName == chatTool.FunctionName))
                 throw new Exception($"{chatTool.FunctionName} is already defined!");
 
-            Tools.Add(chatTool);
-            _delegates[toolName] = del;
+            ChatTools.Add(chatTool);
+            _tools[toolName] = new ToolDefinition(chatTool, del, priorityGroup);
             return this;
         }
 
@@ -205,7 +208,7 @@ namespace Linq.AI.OpenAI
                 }
             };
 
-            foreach (var tool in Tools)
+            foreach (var tool in ChatTools)
                 context.Options.Tools.Add(tool);
 
             context.Messages.Add(GetTransformerSystemPrompt(goal ?? "Transform", instructions));
@@ -258,63 +261,26 @@ namespace Linq.AI.OpenAI
                             // First, add the assistant message with tool calls to the conversation history.
                             context.Messages.Add(new AssistantChatMessage(context.Completion));
 
-                            // Then, add a new tool message for each tool call that is resolved.
-                            context.Completion.ToolCalls.ForEachParallelAsync(async (toolCall, index, ct) =>
+                            // group by tool priority
+                            foreach (var toolGroup in context.Completion.ToolCalls.Select(call => new ToolInvocation(_tools[call.FunctionName], call))
+                                                                                  .GroupBy(inv => inv.Tool.Priority)
+                                                                                  .OrderBy(grp => grp.Key))
                             {
-                                if (!this._delegates.TryGetValue(toolCall.FunctionName, out var del))
-                                    throw new Exception($"Unknown function {toolCall.FunctionName}");
-
-                                List<object> args = new List<object>();
-                                var input = !String.IsNullOrEmpty(toolCall.FunctionArguments.ToString()) ? JObject.Parse(toolCall.FunctionArguments.ToString()) : new JObject();
-                                foreach (var parameter in del.Method.GetParameters())
+                                // process each item in a group in parallel.
+                                toolGroup.ForEachParallelAsync(async (toolInvocation, index, ct) =>
                                 {
-                                    if (parameter.ParameterType == typeof(CancellationToken))
+                                    var result = await toolInvocation.InvokeAsync(context, ct);
+                                    lock (context)
                                     {
-                                        args.Add(ct);
-                                    }
-                                    else if (parameter.ParameterType == typeof(CompletionContext))
-                                    {
-                                        args.Add(context);
-                                    }
-                                    else
-                                    {
-                                        var val = input[parameter.Name!]?.ToObject(parameter.ParameterType) ?? parameter.DefaultValue;
-                                        args.Add(val!);
-                                    }
-                                }
+                                        context.ToolResults[toolInvocation.ToolCall.Id] = result;
 
-                                // call function()
-                                object? result = null;
-                                if (del.Method.ReturnType.Name == "Task")
-                                {
-                                    await (Task)del.DynamicInvoke(args.ToArray<object?>())!;
-                                }
-                                else if (del.Method.ReturnType.Name == "Task`1")
-                                {
-                                    var task = (Task)del.DynamicInvoke(args.ToArray<object?>())!;
-                                    if (task != null)
-                                    {
-                                        await (Task)task;
-                                        result = task!.GetType().GetProperty("Result", BindingFlags.FlattenHierarchy |
-                                                                                       BindingFlags.Public |
-                                                                                       BindingFlags.Instance)!.GetValue(task);
+                                        if (result != null && result is string s)
+                                            context.Messages.Add(new ToolChatMessage(toolInvocation.ToolCall.Id, s));
+                                        else
+                                            context.Messages.Add(new ToolChatMessage(toolInvocation.ToolCall.Id, JToken.FromObject(result ?? String.Empty).ToString()));
                                     }
-                                }
-                                else
-                                {
-                                    result = del.DynamicInvoke(args.ToArray<object?>());
-                                }
-
-                                lock (context)
-                                {
-                                    context.ToolResults[toolCall.Id] = result;
-
-                                    if (result != null && result is string s)
-                                        context.Messages.Add(new ToolChatMessage(toolCall.Id, s));
-                                    else
-                                        context.Messages.Add(new ToolChatMessage(toolCall.Id, JToken.FromObject(result ?? String.Empty).ToString()));
-                                }
-                            });
+                                });
+                            }
                         }
                         break;
 

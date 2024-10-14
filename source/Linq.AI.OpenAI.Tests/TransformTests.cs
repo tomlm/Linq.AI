@@ -14,22 +14,22 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_String2String()
         {
             var source = "My name is Tom.";
-            var transformation = Model.TransformItem<string>(source, "into spanish");
-            Assert.IsTrue(Model.Compare("Me llamo Tom.", transformation!));
+            var transformation = GetModel().TransformItem<string>(source, "into spanish");
+            Assert.IsTrue(GetModel().Compare("Me llamo Tom.", transformation!));
 
-            transformation = await Model.TransformItemAsync<string>(source, "into spanish");
-            Assert.IsTrue(Model.Compare("Me llamo Tom.", transformation!));
+            transformation = await GetModel().TransformItemAsync<string>(source, "into spanish");
+            Assert.IsTrue(GetModel().Compare("Me llamo Tom.", transformation!));
         }
 
         [TestMethod]
         public async Task Transform_String2Object()
         {
             var source = "I have 4 children and my name is Inigo Montoya.";
-            var obj = Model.TransformItem<TestObject>(source);
+            var obj = GetModel().TransformItem<TestObject>(source);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
 
-            obj = await Model.TransformItemAsync<TestObject>(source);
+            obj = await GetModel().TransformItemAsync<TestObject>(source);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
         }
@@ -38,7 +38,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Object2Object()
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
-            var obj = await Model.TransformItemAsync<TestObject>(source, instructions: "Do not fill in properties that you don't have data for.");
+            var obj = await GetModel().TransformItemAsync<TestObject>(source, instructions: "Do not fill in properties that you don't have data for.");
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(0, obj.Count);
         }
@@ -47,15 +47,15 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Bool()
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
-            Assert.IsTrue(await Model.TransformItemAsync<bool>(source, "return true if the <ITEM> has a character in princess bride"));
-            Assert.IsFalse(await Model.TransformItemAsync<bool>(source, "return true if if the <ITEM> has a character in star wars"));
+            Assert.IsTrue(await GetModel().TransformItemAsync<bool>(source, "return true if the <ITEM> has a character in princess bride"));
+            Assert.IsFalse(await GetModel().TransformItemAsync<bool>(source, "return true if if the <ITEM> has a character in star wars"));
         }
 
         [TestMethod]
         public async Task Transform_Classify()
         {
-            Assert.AreEqual(TestCategories.Car, await Model.TransformItemAsync<TestCategories>("Ford", "classify"));
-            Assert.AreEqual(TestCategories.Plane, await Model.TransformItemAsync<TestCategories>("Cessna", "classify"));
+            Assert.AreEqual(TestCategories.Car, await GetModel().TransformItemAsync<TestCategories>("Ford", "classify"));
+            Assert.AreEqual(TestCategories.Plane, await GetModel().TransformItemAsync<TestCategories>("Cessna", "classify"));
         }
 
         [TestMethod]
@@ -63,21 +63,21 @@ namespace Linq.AI.OpenAI.Tests
         {
 
             var categories = String.Join(",", Enum.GetNames<TestCategories>());
-            Assert.AreEqual("Car", await Model.TransformItemAsync<string>("Ford", $"Pick the category from this list: {categories}"));
-            Assert.AreEqual("Plane", await Model.TransformItemAsync<string>("Cessna", $"Pick the category from this list: {categories}"));
+            Assert.AreEqual("Car", await GetModel().TransformItemAsync<string>("Ford", $"Pick the category from this list: {categories}"));
+            Assert.AreEqual("Plane", await GetModel().TransformItemAsync<string>("Cessna", $"Pick the category from this list: {categories}"));
         }
 
         [TestMethod]
         public async Task Transform_Answer()
         {
-            var result = await Model.TransformItemAsync<string>(Text, "What town was he born in?");
+            var result = await GetModel().TransformItemAsync<string>(Text, "What town was he born in?");
             Assert.IsTrue(result.ToLower().Contains("honolulu"));
         }
 
         [TestMethod]
         public async Task Transform_Text2Strings()
         {
-            var results = await Model.TransformItemAsync<string[]>(Text, "return titles that are bolded");
+            var results = await GetModel().TransformItemAsync<string[]>(Text, "return titles that are bolded");
 
             string[] titles =
             [
@@ -102,7 +102,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_Text2Objects()
         {
-            var results = await Model.TransformItemAsync<Article[]>(Text);
+            var results = await GetModel().TransformItemAsync<Article[]>(Text);
 
             Assert.IsTrue(results.Count() > 0);
             foreach (var result in results)
@@ -122,7 +122,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = Model.TransformItems<string>(sources, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
+            var results = GetModel().TransformItems<string>(sources, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
             var result = results[0];
             Assert.IsTrue(result.StartsWith("#"));
             Assert.IsTrue(result.Split('\n').First().Contains("Title 1"));
@@ -140,7 +140,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = Model.TransformItems<TargetObject>(sources).ToList();
+            var results = GetModel().TransformItems<TargetObject>(sources).ToList();
             var result = results[0];
             Assert.AreEqual("Joe Blow", result.AuthorFullName);
             Assert.AreEqual("Joe", result.Author!.FirstName);
@@ -168,7 +168,7 @@ namespace Linq.AI.OpenAI.Tests
                 new SourceObject() { Title="Title 3", Description="Which is better? Flossing or brushing or doing nothing?", Writer="Gert Gooble", PubliicationDate = new DateTime(2020, 10, 1) },
             };
 
-            foreach (var result in Model.TransformItems<TargetObject>(sources))
+            foreach (var result in GetModel().TransformItems<TargetObject>(sources))
             {
                 switch (result.Summary)
                 {
@@ -196,7 +196,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Vision_UriTest()
         {
             var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
-            var result = await Model.SummarizeAsync(uri);
+            var result = await GetModel().SummarizeAsync(uri);
             Assert.IsTrue(result.Contains("beer"));
         }
 
@@ -205,7 +205,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
             var uri2 = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg");
-            var result = await Model.MatchesAsync(new { uri, uri2 }, "Are these pictures of people drinking beer?");
+            var result = await GetModel().MatchesAsync(new { uri, uri2 }, "Are these pictures of people drinking beer?");
             Assert.IsTrue(result);
         }
 
@@ -213,7 +213,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Vision_Select()
         {
             var uri = new Uri("https://static.vecteezy.com/system/resources/previews/001/222/391/original/blue-elegant-decorative-striped-pattern-editable-text-effect-vector.jpg");
-            var results = await Model.SelectAsync<string>(uri, "Extract all phrases from the image");
+            var results = await GetModel().SelectAsync<string>(uri, "Extract all phrases from the image");
             Assert.AreEqual("ILLUSTRATOR GRAPHIC STYLE", results[0]);
             Assert.AreEqual("Works with text box or shape", results[1]);
             Assert.AreEqual("Chicago", results[2]);
@@ -226,14 +226,14 @@ namespace Linq.AI.OpenAI.Tests
         {
             var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
             var data = await new HttpClient().GetByteArrayAsync(uri);
-            var result = await Model.SummarizeAsync(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), "image/jpeg"));
+            var result = await GetModel().SummarizeAsync(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), "image/jpeg"));
             Assert.IsTrue(result.Contains("beer"));
         }
 
         [TestMethod]
         public async Task Transform_PartsTest()
         {
-            var result = await Model.MatchesAsync(new []
+            var result = await GetModel().MatchesAsync(new []
             {
                 ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg")),
                 ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg"))

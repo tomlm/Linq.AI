@@ -10,7 +10,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["horse", "dog", "caterpillar", "airplane", "chair"];
 
-            var results = items.Remove(Model, "things that are alive");
+            var results = items.Remove(GetModel(), "things that are alive");
             Assert.IsTrue(results.Contains("chair"));
             Assert.IsTrue(results.Contains("airplane"));
             Assert.IsFalse(results.Contains("horse"));
@@ -25,7 +25,7 @@ namespace Linq.AI.OpenAI.Tests
             string[] items = ["horse", "dog", "caterpillar", "airplane", "chair"];
             var list = items.Select(item => new { Name = item, Age = rnd.Next(1, 100) }).ToList();
 
-            var results = list.Remove(Model, "things that are alive");
+            var results = list.Remove(GetModel(), "things that are alive");
 
             Assert.IsTrue(results.Any(item => item.Name == "chair"));
             Assert.IsTrue(results.Any(item => item.Name == "airplane"));

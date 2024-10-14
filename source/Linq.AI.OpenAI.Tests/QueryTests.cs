@@ -82,7 +82,7 @@ namespace Linq.AI.OpenAI.Tests
         public void Query()
         {
 
-            var leader = Model.Query<LeaderInfo>("Barack Obama");
+            var leader = GetModel().Query<LeaderInfo>("Barack Obama");
             Assert.AreEqual(2009, leader.Date);
             Assert.AreEqual("President", leader.Title);
         }
@@ -90,7 +90,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task QueryAsync()
         {
-            var leader = await Model.QueryAsync<LeaderInfo>("Barack Obama");
+            var leader = await GetModel().QueryAsync<LeaderInfo>("Barack Obama");
             Assert.AreEqual(2009, leader.Date);
             Assert.AreEqual("President", leader.Title);
         }
@@ -98,14 +98,14 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public void QueryAbout()
         {
-            var answer = Model.QueryAbout(Text, "what is the name of the city where was obama born");
+            var answer = GetModel().QueryAbout(Text, "what is the name of the city where was obama born");
             Assert.AreEqual("honolulu", answer.ToLower());
         }
 
         [TestMethod]
         public void Query_Collection_Objects()
         {
-            var results = Forecast.QueryAboutEach<int>(Model, "What is the temperature difference as an integer?");
+            var results = Forecast.QueryAboutEach<int>(GetModel(), "What is the temperature difference as an integer?");
             for(int i=0; i < Forecast.Count;i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);
@@ -116,8 +116,8 @@ namespace Linq.AI.OpenAI.Tests
         public void QueryAbout_Collection_Strings()
         {
             var results = Forecast
-                .Summarize(Model)
-                .QueryAboutEach<int>(Model, "What is the temperature difference as an integer with no units?");
+                .Summarize(GetModel())
+                .QueryAboutEach<int>(GetModel(), "What is the temperature difference as an integer with no units?");
             for (int i = 0; i < Forecast.Count; i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);

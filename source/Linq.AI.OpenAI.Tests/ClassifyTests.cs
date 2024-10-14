@@ -12,20 +12,20 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Classify_Text_Enum()
         {
-            var result = Model.Classify<TestCategories>("Ford");
+            var result = GetModel().Classify<TestCategories>("Ford");
             Assert.AreEqual(TestCategories.Car, result);
             
-            result = await Model.ClassifyAsync<TestCategories>("Ford");
+            result = await GetModel().ClassifyAsync<TestCategories>("Ford");
             Assert.AreEqual(TestCategories.Car, result);
         }
 
         [TestMethod]
         public async Task Classifiy_Text_Strings()
         {
-            var result = Model.Classify("Ford", Categories);
+            var result = GetModel().Classify("Ford", Categories);
             Assert.AreEqual("Car", result);
 
-            result = await Model.ClassifyAsync("Ford", Categories);
+            result = await GetModel().ClassifyAsync("Ford", Categories);
             Assert.AreEqual("Car", result);
         }
 
@@ -34,7 +34,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["Cessna", "Orient Express", "Ford", "Trek"];
 
-            foreach (var result in items.Classify(Model, Categories))
+            foreach (var result in items.Classify(GetModel(), Categories))
             {
                 switch (result.Item)
                 {
@@ -59,7 +59,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["Cessna", "Orient Express", "nash", "Trek"];
 
-            foreach (var result in items.Select(name => new TestObject() { Name = name }).Classify(Model, Categories))
+            foreach (var result in items.Select(name => new TestObject() { Name = name }).Classify(GetModel(), Categories))
             {
                 switch (result.Item.Name)
                 {
@@ -85,7 +85,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             string[] items = ["Cessna", "Orient Express", "Ford", "Trek"];
 
-            foreach (var result in items.Classify<TestCategories>(Model))
+            foreach (var result in items.Classify<TestCategories>(GetModel()))
             {
                 switch (result.Item)
                 {

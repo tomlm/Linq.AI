@@ -49,8 +49,8 @@ namespace Linq.AI.OpenAI.Tests
                   ]
                 }
                 """;
-            var cards = (await Model.SelectAsync<Card>(Text, "each section"))
-                .Select<string>(Model, goal);
+            var cards = (await GetModel().SelectAsync<Card>(Text, "each section"))
+                .Select<string>(GetModel(), goal);
 
             foreach (var card in cards)
             {
@@ -94,7 +94,7 @@ namespace Linq.AI.OpenAI.Tests
 
             var results = artists
                 .Where(name => name.StartsWith("E") || name.StartsWith("Q"))
-                .Classify<MusicTypes>(Model);
+                .Classify<MusicTypes>(GetModel());
 
             Assert.AreEqual(MusicTypes.Pop, results.Single(result => (string)result.Item == "Ed Sheeran").Category);
             Assert.AreEqual(MusicTypes.Rock, results.Single(result => (string)result.Item == "Queen").Category);
@@ -105,7 +105,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task ArgumentParser()
         {
-            var options = await Model.TransformItemAsync<CommandLineOptions>("foo/foo.csproj using Debug configuration for x64 with no logo.");
+            var options = await GetModel().TransformItemAsync<CommandLineOptions>("foo/foo.csproj using Debug configuration for x64 with no logo.");
             Assert.AreEqual("x64", options.Architecture);
             Assert.AreEqual("foo/foo.csproj", options.ProjectOrSolution);
             Assert.AreEqual(true, options.NoLogo);
@@ -128,10 +128,10 @@ namespace Linq.AI.OpenAI.Tests
         {
             var results = new List<Task<PresidentInfo[]>>()
             {
-                Model.GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states"),
-                Model.GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states")
+                GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states"),
+                GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states")
             }.WaitAll();
-            var result = Model.Compare(results[0], results[1]);
+            var result = GetModel().Compare(results[0], results[1]);
         }
     }
 
