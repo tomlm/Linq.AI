@@ -6,6 +6,11 @@ namespace Linq.AI.OpenAI
     public class CompletionContext
     {
         /// <summary>
+        /// Transformation item
+        /// </summary>
+        public object? Item { get; set; }
+
+        /// <summary>
         /// Options used for the completion
         /// </summary>
         public required ChatCompletionOptions Options { get; set; }

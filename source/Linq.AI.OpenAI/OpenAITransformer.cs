@@ -200,6 +200,7 @@ namespace Linq.AI.OpenAI
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat("Transform", jsonSchema: BinaryData.FromString(schema), jsonSchemaIsStrict: true);
             var context = new CompletionContext()
             {
+                Item = item,
                 Options = new ChatCompletionOptions()
                 {
                     ResponseFormat = responseFormat,
@@ -269,15 +270,26 @@ namespace Linq.AI.OpenAI
                                 // process each item in a group in parallel.
                                 toolGroup.ForEachParallelAsync(async (toolInvocation, index, ct) =>
                                 {
-                                    var result = await toolInvocation.InvokeAsync(context, ct);
-                                    lock (context)
+                                    try
                                     {
-                                        context.ToolResults[toolInvocation.ToolCall.Id] = result;
 
-                                        if (result != null && result is string s)
-                                            context.Messages.Add(new ToolChatMessage(toolInvocation.ToolCall.Id, s));
-                                        else
-                                            context.Messages.Add(new ToolChatMessage(toolInvocation.ToolCall.Id, JToken.FromObject(result ?? String.Empty).ToString()));
+                                        var result = await toolInvocation.InvokeAsync(context, ct);
+                                        lock (context)
+                                        {
+                                            context.ToolResults[toolInvocation.ToolCall.Id] = result;
+
+                                            if (result != null && result is string s)
+                                                context.Messages.Add(new ToolChatMessage(toolInvocation.ToolCall.Id, s));
+                                            else
+                                                context.Messages.Add(new ToolChatMessage(toolInvocation.ToolCall.Id, JToken.FromObject(result ?? String.Empty).ToString()));
+                                        }
+                                    }
+                                    catch (Exception err)
+                                    {
+                                        lock (context)
+                                        {
+                                            context.Messages.Add(new ToolChatMessage(toolInvocation.ToolCall.Id, $"Error occured: {err.Message}"));
+                                        }
                                     }
                                 });
                             }
