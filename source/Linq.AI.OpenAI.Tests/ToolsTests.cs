@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Diagnostics;
 
@@ -25,7 +26,7 @@ namespace Linq.AI.OpenAI.Tests
                         };
                     }
                 );
-            for(char ch='A'; ch < 'Z';ch++)
+            for (char ch = 'A'; ch < 'Z'; ch++)
             {
                 var result = $"{ch}";
                 model.AddTool($"FUNC{ch}", $"Compute {ch}()", async () =>
@@ -89,7 +90,22 @@ namespace Linq.AI.OpenAI.Tests
             Assert.IsTrue(result.Contains("F"));
             Assert.IsFalse(result.Contains("G"));
         }
-    }
-}
 
- 
+        [TestMethod]
+        public async Task Tool_ItemContext()
+        {
+            var item = new TestItem { Name = "A", Counter = 0 };
+            var result = await GetModel().QueryAboutAsync<TestItem>(item, "increment the item counter");
+            Assert.AreEqual(1, result.Counter);
+            Assert.AreEqual(JsonConvert.SerializeObject(item), JsonConvert.SerializeObject(result));
+        }
+
+    }
+
+    public class TestItem
+    {
+        public string Name { get; set; }
+        public int Counter { get; set; }
+    }
+
+}

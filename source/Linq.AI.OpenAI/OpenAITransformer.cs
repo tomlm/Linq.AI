@@ -115,7 +115,7 @@ namespace Linq.AI.OpenAI
             parmsSchema["required"] = new JArray();
             parmsSchema["properties"] = new JObject();
 
-            foreach (var parameter in methodInfo.GetParameters().Where(parm => parm.ParameterType != typeof(CancellationToken)))
+            foreach (var parameter in methodInfo.GetParameters().Where(parm => parm.ParameterType != typeof(CancellationToken) && parm.ParameterType != typeof(CompletionContext)))
             {
                 ArgumentNullException.ThrowIfNull(parameter?.Name);
 

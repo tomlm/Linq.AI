@@ -14,6 +14,14 @@ namespace Linq.AI.OpenAI.Tests
             => Math.Pow(x, y);
 
 
+        [Instruction("Increment the Item Counter ")]
+        public static TestItem IncrementItemCounter(CompletionContext context)
+        {
+            var item = context.Item as TestItem;
+            item.Counter++;
+            return item;
+        }
+
         [System.ComponentModel.Description("Lookup weather for a location")]
         public static async Task<WeatherReport> GetWeatherForLocation([Required] string location, TemperatureUnits? unit, CancellationToken ct = default)
         {
