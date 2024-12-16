@@ -205,12 +205,15 @@ namespace Linq.AI.OpenAI
                 {
                     ResponseFormat = responseFormat,
                     Temperature = this.Temperature,
-                    AllowParallelToolCalls = true
                 }
             };
 
-            foreach (var tool in ChatTools)
-                context.Options.Tools.Add(tool);
+            if (ChatTools.Any())
+            {
+                context.Options.AllowParallelToolCalls = true;
+                foreach (var tool in ChatTools)
+                    context.Options.Tools.Add(tool);
+            }
 
             context.Messages.Add(GetTransformerSystemPrompt(goal ?? "Transform", instructions));
             context.Messages.Add(GetTransformerItemMessage(item));
