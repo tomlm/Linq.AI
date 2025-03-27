@@ -117,7 +117,7 @@ The object extensions use the ITransformer model to work each item in a collecti
 | ***.Remove()*** | Remove each item which matches a natural language filter. |
 | ***.Classify()*** | Classify each item. |
 | ***.Summarize()*** | Create a summarization for each item. |
-| ***.QueryAboutEach()*** | Gets the question to a question about each item. |
+| ***.QueryAboutEach()*** | Gets the answer to a question about each item. |
 
 > NOTE: These methods internally run AI calls as throttled parallel background tasks.
 
