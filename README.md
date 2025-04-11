@@ -14,7 +14,7 @@ Currently there is an implementation for OpenAI which you can get by installing 
 
 You instantiate a transformer like this:
 ```csharp
-var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>");
+var model = new OpenAITransformer(model: "gpt-4o-mini", new ApiKeyCredential("<openai.apikey>"));
 ```
 > NOTE: The model must support structured output.
 
