@@ -1,6 +1,5 @@
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-using Iciclecreek.Async;
 using Newtonsoft.Json.Linq;
 using OpenAI.Chat;
 using System.Diagnostics;
@@ -49,10 +48,10 @@ namespace Linq.AI.OpenAI.Tests
                   ]
                 }
                 """;
-            var cards = (await GetModel().SelectAsync<Card>(Text, "each section"))
-                .Select<string>(GetModel(), goal);
+            var cards = (await GetModel().ExtractAsync<Card>(Text, "each section"))
+                    .SelectAsync<string>(GetModel(), goal);
 
-            foreach (var card in cards)
+            await foreach (var card in cards)
             {
                 Debug.WriteLine(card);
             }
@@ -60,7 +59,7 @@ namespace Linq.AI.OpenAI.Tests
 
 
         [TestMethod]
-        public void Classify()
+        public async Task Classify()
         {
             string[] artists =
             [
@@ -92,9 +91,10 @@ namespace Linq.AI.OpenAI.Tests
             ];
 
 
-            var results = artists
+            var results = await artists
                 .Where(name => name.StartsWith("E") || name.StartsWith("Q"))
-                .Classify<MusicTypes>(GetModel());
+                .ClassifyAsync<MusicTypes>(GetModel())
+                .ToListAsync();
 
             Assert.AreEqual(MusicTypes.Pop, results.Single(result => (string)result.Item == "Ed Sheeran").Category);
             Assert.AreEqual(MusicTypes.Rock, results.Single(result => (string)result.Item == "Queen").Category);
@@ -124,14 +124,15 @@ namespace Linq.AI.OpenAI.Tests
 
 
         [TestMethod]
-        public void TestComplex()
+        public async Task TestComplex()
         {
-            var results = new List<Task<PresidentInfo[]>>()
+            var results = new List<PresidentInfo[]>()
             {
-                GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states"),
-                GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states")
-            }.WaitAll();
-            var result = GetModel().Compare(results[0], results[1]);
+                await GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states"),
+                await GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states")
+            };
+            
+            var result = GetModel().CompareAsync(results[0], results[1]);
         }
     }
 

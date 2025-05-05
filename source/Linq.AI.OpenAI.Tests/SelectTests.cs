@@ -45,15 +45,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Select_Text_String()
         {
-            var results = GetModel().Select<string>(Text, "section titles");
-
-            Assert.IsTrue(results.Count() > 1);
-            foreach (var result in results)
-            {
-                Assert.IsNotNull(result);
-            }
-
-            results = await GetModel().SelectAsync<string>(Text, "section titles");
+            var results = await GetModel().ExtractAsync<string>(Text, "section titles");
 
             Assert.IsTrue(results.Count() > 1);
             foreach (var result in results)
@@ -65,7 +57,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Select_Text_Object()
         {
-            var results = GetModel().Select<Article>(Text, "turn each section into an article");
+            var results = await GetModel().ExtractAsync<Article>(Text, "turn each section into an article");
 
             Assert.IsTrue(results.Count > 1);
             foreach(var result in results)
@@ -73,19 +65,10 @@ namespace Linq.AI.OpenAI.Tests
                 Assert.IsNotNull(result.Title);
                 Assert.IsNotNull(result.Paragraph);
             }
-
-            results = await GetModel().SelectAsync<Article>(Text, "turn each section in an article");
-
-            Assert.IsTrue(results.Count > 1);
-            foreach (var result in results)
-            {
-                Assert.IsNotNull(result.Title);
-                Assert.IsNotNull(result.Paragraph);
-            }
         }
 
         [TestMethod]
-        public void Select_Collection_String2String()
+        public async Task Select_Collection_String2String()
         {
             var sources = new List<string>()
             {
@@ -94,15 +77,18 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.Select<string>(GetModel(), "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}");
+            var results = await sources
+                                .SelectAsync<string>(GetModel(), "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}")
+                                .ToListAsync();
             var result = results[0];
             Assert.IsTrue(result.StartsWith("#"));
             Assert.IsTrue(result.Split('\n').First().Contains("Title 1"));
             Assert.IsTrue(result.Contains("Joe Blow"));
+
         }
 
         [TestMethod]
-        public void Select_Collection_String2Object()
+        public async Task Select_Collection_String2Object()
         {
             var sources = new List<string>()
             {
@@ -111,7 +97,9 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = sources.Select<TargetObject>(GetModel());
+            var results = await sources
+                .SelectAsync<TargetObject>(GetModel())
+                .ToListAsync();
             var result = results[0];
             Assert.AreEqual("Joe Blow", result.AuthorFullName);
             Assert.AreEqual("Joe", result.Author!.FirstName);
@@ -126,11 +114,10 @@ namespace Linq.AI.OpenAI.Tests
             Assert.AreEqual("Gert Gooble", result.AuthorFullName);
             Assert.AreEqual("Gert", result.Author!.FirstName);
             Assert.AreEqual("Gooble", result.Author.LastName);
-
         }
 
         [TestMethod]
-        public void Select_Collection_Object2Object()
+        public async Task Select_Collection_Object2Object()
         {
             var sources = new List<SourceObject>()
             {
@@ -139,7 +126,7 @@ namespace Linq.AI.OpenAI.Tests
                 new SourceObject() { Title="Title 3", Description="Which is better? Flossing or brushing or doing nothing?", Writer="Gert Gooble", PubliicationDate = new DateTime(2020, 10, 1) },
             };
 
-            foreach (var result in sources.Select<TargetObject>(GetModel()))
+            await foreach (var result in sources.SelectAsync<TargetObject>(GetModel()))
             {
                 switch (result.Summary)
                 {

@@ -10,11 +10,12 @@ namespace Linq.AI.OpenAI.Tests
     public class ToolsTests : UnitTestBase
     {
 
-        public override ITransformer GetModel()
+        public override ITransformer GetModel(string modelName="gpt-4o")
         {
-            var model = base.GetModel() as OpenAITransformer;
+            var model = base.GetModel(modelName) as OpenAITransformer;
 
-            model.AddTools<MyFunctions>()
+            model
+                .AddTools<MyFunctions>()
                 .AddTool("LookupContact", "lookup a contact record for a person",
                     async (string name, CancellationToken ct) =>
                     {
@@ -29,7 +30,7 @@ namespace Linq.AI.OpenAI.Tests
             for (char ch = 'A'; ch < 'Z'; ch++)
             {
                 var result = $"{ch}";
-                model.AddTool($"FUNC{ch}", $"Compute {ch}()", async () =>
+                model.AddTool($"FUNC{ch}", $"Function for FUNC{ch}()", async () =>
                 {
                     await Task.Delay(1000);
                     return result;
@@ -80,22 +81,21 @@ namespace Linq.AI.OpenAI.Tests
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var result = await GetModel().GenerateAsync<string[]>("retrieve FUNCA(), FUNCB(), FUNCC(), FUNCD(), FUNCE(), FUNCF()");
+            var result = await GetModel().GenerateAsync<string[]>("return the results of FUNCA() and FUNCF() as results");
             sw.Stop();
             Assert.IsTrue(result.Contains("A"));
-            Assert.IsTrue(result.Contains("B"));
-            Assert.IsTrue(result.Contains("C"));
-            Assert.IsTrue(result.Contains("D"));
-            Assert.IsTrue(result.Contains("E"));
+            Assert.IsFalse(result.Contains("B"));
+            Assert.IsFalse(result.Contains("C"));
+            Assert.IsFalse(result.Contains("D"));
+            Assert.IsFalse(result.Contains("E"));
             Assert.IsTrue(result.Contains("F"));
-            Assert.IsFalse(result.Contains("G"));
         }
 
         [TestMethod]
         public async Task Tool_ItemContext()
         {
             var item = new TestItem { Name = "A", Counter = 0 };
-            var result = await GetModel().QueryAboutAsync<TestItem>(item, "increment the item counter");
+            var result = await GetModel().QueryAbout<TestItem>(item, "increment the item counter");
             Assert.AreEqual(1, result.Counter);
             Assert.AreEqual(JsonConvert.SerializeObject(item), JsonConvert.SerializeObject(result));
         }

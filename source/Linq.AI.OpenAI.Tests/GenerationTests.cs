@@ -10,16 +10,16 @@ namespace Linq.AI.OpenAI.Tests
     {
 
         [TestMethod]
-        public void Generate_Text()
+        public async Task Generate_Text()
         {
-            var results = GetModel().Generate("a haiku about camping", "it must have the word camp, campfire or camping in it");
+            var results = await GetModel().GenerateAsync("a haiku about camping", "it must have the word camp, campfire or camping in it");
             Assert.IsTrue(results.ToLower().Contains("camp"));
         }
 
         [TestMethod]
-        public void Generate_Object()
+        public async Task Generate_Object()
         {
-            var result = GetModel().Generate<CityObject>("a city object for Ames, Iowa");
+            var result = await GetModel().GenerateAsync<CityObject>("a city object for Ames, Iowa");
             Assert.AreEqual("Ames", result.Name);
         }
 
@@ -44,9 +44,9 @@ namespace Linq.AI.OpenAI.Tests
 
 
         [TestMethod]
-        public void Generate_Collections_Object()
+        public async Task Generate_Collections_Object()
         {
-            var generated = GetModel().Generate<CityObject[]>("return the top 5 largest cities in the world.");
+            var generated = await GetModel().GenerateAsync<CityObject[]>("return the top 5 largest cities in the world.");
             Assert.IsTrue(generated.Any(item => item.Name == "Mexico City" && item.Country == "Mexico" ));
             Assert.AreEqual(5, generated.Count());
         }
@@ -54,8 +54,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transformer_StringDefault()
         {
-            Assert.AreEqual("tset", GetModel().TransformItem("test", "reverse letters"));
-            Assert.AreEqual("tset", await GetModel().TransformItemAsync("test", "reverse letters"));
+            Assert.AreEqual("tset", await GetModel().TransformItem("test", "reverse letters"));
         }
 
     }

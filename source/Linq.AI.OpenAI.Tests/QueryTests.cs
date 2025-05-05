@@ -1,4 +1,5 @@
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+using Crazor;
 using Newtonsoft.Json.Linq;
 
 namespace Linq.AI.OpenAI.Tests
@@ -79,45 +80,42 @@ namespace Linq.AI.OpenAI.Tests
             public int? Date { get; set; }
         }
         [TestMethod]
-        public void Query()
+        public async Task Query()
         {
 
-            var leader = GetModel().Query<LeaderInfo>("Barack Obama");
-            Assert.AreEqual(2009, leader.Date);
-            Assert.AreEqual("President", leader.Title);
-        }
-
-        [TestMethod]
-        public async Task QueryAsync()
-        {
             var leader = await GetModel().QueryAsync<LeaderInfo>("Barack Obama");
             Assert.AreEqual(2009, leader.Date);
             Assert.AreEqual("President", leader.Title);
         }
 
         [TestMethod]
-        public void QueryAbout()
+        public async Task QueryAbout()
         {
-            var answer = GetModel().QueryAbout(Text, "what is the name of the city where was obama born");
+            var answer = await GetModel().QueryAboutAsync(Text, "what is the name of the city where was obama born");
             Assert.AreEqual("honolulu", answer.ToLower());
         }
 
         [TestMethod]
-        public void Query_Collection_Objects()
+        public async Task Query_Collection_Objects()
         {
-            var results = Forecast.QueryAboutEach<int>(GetModel(), "What is the temperature difference as an integer?");
+            var results = await Forecast
+                .QueryAboutAsync<int>(GetModel(), "What is the temperature difference as an integer?")
+                .ToListAsync();
+            
             for(int i=0; i < Forecast.Count;i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);
             }
+
         }
 
         [TestMethod]
-        public void QueryAbout_Collection_Strings()
+        public async Task QueryAbout_Collection_Strings()
         {
-            var results = Forecast
-                .Summarize(GetModel())
-                .QueryAboutEach<int>(GetModel(), "What is the temperature difference as an integer with no units?");
+            var results = await Forecast
+                .SummarizeAsync(GetModel())
+                .QueryAboutAsync<int>(GetModel(), "What is the temperature difference as an integer with no units?")
+                .ToListAsync();
             for (int i = 0; i < Forecast.Count; i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);

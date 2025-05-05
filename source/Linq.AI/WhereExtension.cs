@@ -1,4 +1,4 @@
-﻿using Iciclecreek.Async;
+﻿using System.Runtime.CompilerServices;
 
 namespace Linq.AI
 {
@@ -21,20 +21,22 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>true/false</returns>
-        public static bool Matches(this ITransformer model, object source, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItem<bool>(source, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
+        public static ValueTask<bool> MatchesAsync(this ITransformer model, object source, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<bool>(source, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
 
         /// <summary>
-        /// Determine if text matches goal
+        /// Enumerate each item in the collection and use LLM model to determine if it matches the goal
         /// </summary>
-        /// <param name="source">source to inspect</param>
-        /// <param name="model">ITransformer to use for model</param>
-        /// <param name="constraint">constraint to use for matching</param>
-        /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
-        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
-        /// <returns>true/false</returns>
-        public static Task<bool> MatchesAsync(this ITransformer model, object source, string constraint, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItemAsync<bool>(source, $"Does the <ITEM> match this contraint => {constraint}?", instructions, cancellationToken);
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="model"></param>
+        /// <param name="constraint"></param>
+        /// <param name="instructions"></param>
+        /// <returns></returns>
+        public static IAsyncEnumerable<T> WhereAsync<T>(this IEnumerable<T> source, ITransformer model, string constraint, string? instructions = null)
+            => source
+                .ToAsyncEnumerable()
+                .WhereAsync(model, constraint, instructions);
 
         /// <summary>
         /// Determine if items matches goal
@@ -44,16 +46,10 @@ namespace Linq.AI
         /// <param name="model">ITransformer to use for model</param>
         /// <param name="constraint">constraint to use for matching on each item</param>
         /// <param name="instructions">(OPTIONAL) optional extension of system prompt</param>
-        /// <param name="maxParallel">(OPTIONAL) controls number of concurrent tasks executed</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of objects that match the goal</returns>
-        public static IList<T> Where<T>(this IEnumerable<T> source, ITransformer model, string constraint, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
-        {
-            var count = source.Count();
-            return source.WhereParallelAsync((item, index, ct) => 
-                model.MatchesAsync(item!, constraint, Utils.GetItemIndexClause(index, count, instructions), cancellationToken), 
-                maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken: cancellationToken);
-        }
+        public static IAsyncEnumerable<T> WhereAsync<T>(this IAsyncEnumerable<T> source, ITransformer model, string constraint, string? instructions = null)
+            => source.WhereAwaitWithCancellation(async (item, index, ct) => await model.MatchesAsync(item!, constraint, Utils.GetItemIndexClause(index, instructions)));
     }
 }
 

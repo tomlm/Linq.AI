@@ -9,19 +9,16 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Matches()
         {
-            Assert.IsTrue(GetModel().Matches("a duck", "item is a bird"));
-            Assert.IsFalse(GetModel().Matches("a truck", "item is a bird"));
-
             Assert.IsTrue(await GetModel().MatchesAsync("a duck", "item is a bird"));
             Assert.IsFalse(await GetModel().MatchesAsync("a truck", "item is a bird"));
         }
 
         [TestMethod]
-        public void Where_Strings()
+        public async Task Where_Strings()
         {
             string[] items = ["horse", "thumb tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(GetModel(), "it is alive");
+            var results = await items.WhereAsync(GetModel(), "it is alive").ToListAsync();
             Assert.IsTrue(results.Contains("horse"));
             Assert.IsFalse(results.Contains("airplane"));
             Assert.IsFalse(results.Contains("tack"));
@@ -30,11 +27,13 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Where_Objects()
+        public async Task Where_Objects()
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Select(item => new { Name = item }).Where(GetModel(), "it is alive");
+            var results = await items.Select(item => new { Name = item })
+                    .WhereAsync(GetModel(), "it is alive")
+                    .ToListAsync();
             Assert.IsTrue(results.Any(item => item.Name == "horse"));
             Assert.IsFalse(results.Any(item => item.Name == "tack"));
             Assert.IsFalse(results.Any(item => item.Name == "airplane"));
@@ -43,24 +42,28 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Where_Index_Semantic()
+        public async Task Where_Index_Semantic()
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(GetModel(), "The item is the first or last");
-            Assert.IsTrue(results.Contains("horse"));
-            Assert.IsFalse(results.Contains("tack"));
+            var results = await items
+                                .WhereAsync(GetModel(), "The item is the second item")
+                                .ToListAsync();
+            Assert.IsFalse(results.Contains("horse"));
+            Assert.IsTrue(results.Contains("tack"));
             Assert.IsFalse(results.Contains("caterpillar"));
             Assert.IsFalse(results.Contains("airplane"));
-            Assert.IsTrue(results.Contains("sandwich"));
+            Assert.IsFalse(results.Contains("sandwich"));
         }
 
         [TestMethod]
-        public void Where_Index()
+        public async Task Where_Index()
         {
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
-            var results = items.Where(GetModel(), "The item index is even number");
+            var results = await items
+                                .WhereAsync(GetModel(), "The item index is even number")
+                                .ToListAsync();
             Assert.IsTrue(results.Contains("horse"));
             Assert.IsFalse(results.Contains("tack"));
             Assert.IsTrue(results.Contains("caterpillar"));

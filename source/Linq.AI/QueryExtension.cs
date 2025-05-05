@@ -1,4 +1,6 @@
 ﻿
+using System.Runtime.CompilerServices;
+
 namespace Linq.AI
 {
     public static class AnswerExtension
@@ -6,96 +8,62 @@ namespace Linq.AI
         /// <summary>
         /// Ask a question about the source object and get the answer as text.
         /// </summary>
-        /// <param name="source">object to inspect</param>
         /// <param name="model">ITransformer for model</param>
         /// <param name="question">question you want answered</param>
         /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
         /// <returns>answer of question</returns>
-        public static string Query(this ITransformer model, string question, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItem<string>(String.Empty, $"Answer the question: {question}", instructions, cancellationToken);
-
-        /// <summary>
-        /// Ask a question about the source object and get the answer as text.
-        /// </summary>
-        /// <param name="model">ITransformer for model</param>
-        /// <param name="question">question you want answered</param>
-        /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
-        /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
-        /// <returns>answer of question</returns>
-        public static Task<string> QueryAsync(this ITransformer model, string question, string? instructions = null, CancellationToken cancellationToken = default)
+        public static ValueTask<string> QueryAsync(this ITransformer model, string question, string? instructions = null, CancellationToken cancellationToken = default)
             => model.TransformItemAsync<string>(string.Empty, $"Answer the question: {question}", instructions, cancellationToken);
 
         /// <summary>
         /// Answer a question about the source using a OpenAI model
         /// </summary>
-        /// <param name="source">object to inspect</param>
         /// <param name="model">ITransformer for model</param>
         /// <param name="question">question you want answered</param>
         /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
         /// <returns>answer of question</returns>
-        public static ResultT Query<ResultT>(this ITransformer model, string question, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItem<ResultT>(string.Empty, $"Answer the question: {question}", instructions, cancellationToken);
-
-        /// <summary>
-        /// Answer a question about the source using a OpenAI model
-        /// </summary>
-        /// <param name="model">ITransformer for model</param>
-        /// <param name="question">question you want answered</param>
-        /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
-        /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
-        /// <returns>answer of question</returns>
-        public static Task<ResultT> QueryAsync<ResultT>(this ITransformer model, string question, string? instructions = null, CancellationToken cancellationToken = default)
+        public static ValueTask<ResultT> QueryAsync<ResultT>(this ITransformer model, string question, string? instructions = null, CancellationToken cancellationToken = default)
             => model.TransformItemAsync<ResultT>(String.Empty, $"Answer the question: {question}", instructions, cancellationToken);
 
         /// <summary>
         /// Ask a question about the source object and get the answer as text.
         /// </summary>
-        /// <param name="source">object to inspect</param>
+        /// <param name="item">object to inspect</param>
         /// <param name="model">ITransformer for model</param>
         /// <param name="question">question you want answered</param>
         /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
         /// <returns>answer of question</returns>
-        public static string QueryAbout(this ITransformer model, object source, string question, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItem<string>(source, $"Answer the question about <ITEM>: {question}", instructions, cancellationToken);
-
-        /// <summary>
-        /// Ask a question about the source object and get the answer as text.
-        /// </summary>
-        /// <param name="source">object to inspect</param>
-        /// <param name="model">ITransformer for model</param>
-        /// <param name="question">question you want answered</param>
-        /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
-        /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
-        /// <returns>answer of question</returns>
-        public static Task<string> QueryAboutAsync(this ITransformer model, object source, string question, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItemAsync<string>(source, $"Answer the question about <ITEM>: {question}", instructions, cancellationToken);
+        public static ValueTask<string> QueryAboutAsync(this ITransformer model, object item, string question, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<string>(item, $"Answer the question about <ITEM>: {question}", instructions, cancellationToken);
 
         /// <summary>
         /// Answer a question about the source using a OpenAI model
         /// </summary>
-        /// <param name="source">object to inspect</param>
+        /// <param name="item">object to inspect</param>
         /// <param name="model">ITransformer for model</param>
         /// <param name="question">question you want answered</param>
         /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
         /// <returns>answer of question</returns>
-        public static ResultT QueryAbout<ResultT>(this ITransformer model, object source, string question, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItem<ResultT>(source, $"Answer the question about <ITEM>: {question}", instructions, cancellationToken);
+        public static ValueTask<ResultT> QueryAbout<ResultT>(this ITransformer model, object item, string question, string? instructions = null, CancellationToken cancellationToken = default)
+            => model.TransformItemAsync<ResultT>(item, $"Answer the question about <ITEM>: {question}", instructions, cancellationToken);
 
         /// <summary>
-        /// Answer a question about the source using a OpenAI model
+        /// Asnwer a question about each element in a collection.
         /// </summary>
-        /// <param name="source">object to inspect</param>
-        /// <param name="model">ITransformer for model</param>
-        /// <param name="question">question you want answered</param>
-        /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
-        /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
-        /// <returns>answer of question</returns>
-        public static Task<ResultT> QueryAboutAsync<ResultT>(this ITransformer model, object source, string question, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItemAsync<ResultT>(source, $"Answer the question about <ITEM>: {question}", instructions, cancellationToken);
+        /// <typeparam name="ResultT"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="model"></param>
+        /// <param name="question"></param>
+        /// <param name="instructions"></param>
+        /// <returns></returns>
+        public static IAsyncEnumerable<ResultT> QueryAboutAsync<ResultT>(this IEnumerable<object> source, ITransformer model, string question, string? instructions = null)
+            => source
+                .ToAsyncEnumerable()
+                .QueryAboutAsync<ResultT>(model, question, instructions);
 
         /// <summary>
         /// Answer a question about each item in a collection using an AI Model
@@ -105,11 +73,10 @@ namespace Linq.AI
         /// <param name="model">model to use</param>
         /// <param name="question">question to ask about each item</param>
         /// <param name="instructions">(OPTIONAL) instructions for how to answer</param>
-        /// <param name="maxParallel">(OPTIONAL) max parallelization to use</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
         /// <returns>an answer in the form of ResultT</returns>
-        public static IList<ResultT> QueryAboutEach<ResultT>(this IEnumerable<object> source, ITransformer model, string question, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
-            => source.TransformItems<ResultT>(model, $"Answer the question about <ITEM>: {question}", instructions, maxParallel, cancellationToken);
+        public static IAsyncEnumerable<ResultT> QueryAboutAsync<ResultT>(this IAsyncEnumerable<object> source, ITransformer model, string question, string? instructions = null)
+            => source.SelectAwaitWithCancellation((item, index, ct) => model.TransformItemAsync<ResultT>(item, $"Answer the question about <ITEM>: {question}", instructions, ct));
     }
 }
 

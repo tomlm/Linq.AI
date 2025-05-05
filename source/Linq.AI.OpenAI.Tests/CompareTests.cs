@@ -6,13 +6,13 @@ namespace Linq.AI.OpenAI.Tests
     public class CompareTests : UnitTestBase
     {
         [TestMethod]
-        public void Compare_Strings_Semantically()
+        public async Task Compare_Strings_Semantically()
         {
-            Assert.IsTrue(GetModel().Compare("fourteen", "14"));
-            Assert.IsTrue(GetModel().Compare("fourteen years old", "10 + 4 years"));
-            Assert.IsTrue(GetModel().Compare("Me llamo Tom", "Mi nombre es Tom"));
-            Assert.IsTrue(GetModel().Compare("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
-            Assert.IsFalse(GetModel().Compare("Me llamo Tom", "Mi padre es Tom"));
+            Assert.IsTrue(await GetModel().CompareAsync("fourteen", "14"));
+            Assert.IsTrue(await GetModel().CompareAsync("fourteen years old", "10 + 4 years"));
+            Assert.IsTrue(await GetModel().CompareAsync("Me llamo Tom", "Mi nombre es Tom"));
+            Assert.IsTrue(await GetModel().CompareAsync("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
+            Assert.IsFalse(await GetModel().CompareAsync("Me llamo Tom", "Mi padre es Tom"));
         }
 
         [TestMethod]

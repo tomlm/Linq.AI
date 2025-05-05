@@ -62,12 +62,12 @@ namespace Linq.AI.OpenAI.Tests
 
     public class UnitTestBase
     {
-        public virtual ITransformer GetModel()
+        public virtual ITransformer GetModel(string modelName="gpt-4o-mini")
         {
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()
                 .Build();
-            return new OpenAITransformer(model: "gpt-4o-mini", new ApiKeyCredential(config["OpenAIKey"]));
+            return new OpenAITransformer(model: modelName, new ApiKeyCredential(config["OpenAIKey"]));
         }
 
         public string Text = """

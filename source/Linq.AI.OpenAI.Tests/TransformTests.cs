@@ -1,4 +1,3 @@
-using Iciclecreek.Async;
 using OpenAI.Chat;
 using System;
 using System.Diagnostics;
@@ -14,22 +13,15 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_String2String()
         {
             var source = "My name is Tom.";
-            var transformation = GetModel().TransformItem<string>(source, "into spanish");
-            Assert.IsTrue(GetModel().Compare("Me llamo Tom.", transformation!));
-
-            transformation = await GetModel().TransformItemAsync<string>(source, "into spanish");
-            Assert.IsTrue(GetModel().Compare("Me llamo Tom.", transformation!));
+            var transformation = await GetModel().TransformItemAsync<string>(source, "into spanish");
+            Assert.IsTrue(await GetModel().CompareAsync("Me llamo Tom.", transformation!));
         }
 
         [TestMethod]
         public async Task Transform_String2Object()
         {
             var source = "I have 4 children and my name is Inigo Montoya.";
-            var obj = GetModel().TransformItem<TestObject>(source);
-            Assert.AreEqual("Inigo Montoya", obj.Name);
-            Assert.AreEqual(4, obj.Count);
-
-            obj = await GetModel().TransformItemAsync<TestObject>(source);
+            var obj = await GetModel().TransformItemAsync<TestObject>(source);
             Assert.AreEqual("Inigo Montoya", obj.Name);
             Assert.AreEqual(4, obj.Count);
         }
@@ -113,7 +105,7 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Transform_Collection_String2String()
+        public async Task Transform_Collection_String2String()
         {
             var sources = new List<string>()
             {
@@ -122,7 +114,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = GetModel().TransformItems<string>(sources, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToList();
+            var results = await GetModel().TransformItemsAsync<string>(sources, "Transform to text like this:\n# {{title}}\nBy {{Author}}\n{{Summary}}").ToListAsync();
             var result = results[0];
             Assert.IsTrue(result.StartsWith("#"));
             Assert.IsTrue(result.Split('\n').First().Contains("Title 1"));
@@ -131,7 +123,7 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Transform_Collection_String2Object()
+        public async Task Transform_Collection_String2Object()
         {
             var sources = new List<string>()
             {
@@ -140,7 +132,7 @@ namespace Linq.AI.OpenAI.Tests
                 "Which is better? Flossing or brushing or doing nothing? Gert Gooble discusses this important subject." ,
             };
 
-            var results = GetModel().TransformItems<TargetObject>(sources).ToList();
+            var results = await GetModel().TransformItemsAsync<TargetObject>(sources).ToListAsync();
             var result = results[0];
             Assert.AreEqual("Joe Blow", result.AuthorFullName);
             Assert.AreEqual("Joe", result.Author!.FirstName);
@@ -159,7 +151,7 @@ namespace Linq.AI.OpenAI.Tests
         }
 
         [TestMethod]
-        public void Transform_Collection_Object2Object()
+        public async Task Transform_Collection_Object2Object()
         {
             var sources = new List<SourceObject>()
             {
@@ -168,7 +160,7 @@ namespace Linq.AI.OpenAI.Tests
                 new SourceObject() { Title="Title 3", Description="Which is better? Flossing or brushing or doing nothing?", Writer="Gert Gooble", PubliicationDate = new DateTime(2020, 10, 1) },
             };
 
-            foreach (var result in GetModel().TransformItems<TargetObject>(sources))
+            await foreach (var result in GetModel().TransformItemsAsync<TargetObject>(sources))
             {
                 switch (result.Summary)
                 {
@@ -213,7 +205,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Transform_Vision_Select()
         {
             var uri = new Uri("https://static.vecteezy.com/system/resources/previews/001/222/391/original/blue-elegant-decorative-striped-pattern-editable-text-effect-vector.jpg");
-            var results = await GetModel().SelectAsync<string>(uri, "Extract all phrases from the image");
+            var results = await GetModel().ExtractAsync<string>(uri, "Extract all phrases from the image");
             Assert.AreEqual("ILLUSTRATOR GRAPHIC STYLE", results[0]);
             Assert.AreEqual("Works with text box or shape", results[1]);
             Assert.AreEqual("Chicago", results[2]);

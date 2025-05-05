@@ -14,7 +14,7 @@ Currently there is an implementation for OpenAI which you can get by installing 
 
 You instantiate a transformer like this:
 ```csharp
-var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>");
+var model = new new OpenAITransformer(model: "gpt-4o-mini", new ApiKeyCredential("<open ai key>"));
 ```
 > NOTE: The model must support structured output.
 
@@ -23,77 +23,95 @@ The model extensions add methods to the ITransformer model to work with a single
 
 | Extension | Description | 
 | ----------| ------------|
-| ***.Classify()/.ClassifyAsync()*** | classify the text using a model. |
-| ***.Summarize()/.SummarizeAsync()*** | Create a summarization for the text by using a model. |
-| ***.Matches()/.MatchesAsync()*** | Return whether the text matches using a model. |
-| ***.Query()/.QueryAsync()*** | get the answer to a global question using a model. |
-| ***.QueryAbout()/.QueryAboutAsync()*** | get the answer to a question from the text using a model. |
-| ***.Select()/.SelectAsync()*** | Select a collection of items from the text using a model. |
-| ***.Compare()/.CompareAsync()*** | Compare 2 objects for semantic equivelancy |
+| ***.ClassifyAsync()*** | classify the text using a model. |
+| ***.SummarizeAsync()*** | Create a summarization for the text by using a model. |
+| ***.MatchesAsync()*** | Return whether the text matches using a model. |
+| ***.QueryAsync()*** | get the answer to a global question using a model. |
+| ***.QueryAboutAsync()*** | get the answer to a question from the text using a model. |
+| ***.ExtractAsync()*** | Extract items from the text using a model. |
+| ***.CompareAsync()*** | Compare 2 objects for semantic equivelancy |
 
-## model.Classify() 
+## model.ClassifyAsync() 
 Classify an item using an enumeration or list of categories.
 
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classification = model.Classify<Genres>(item);
+var classification = await model.ClassifyAsync<Genres>(item);
 ```
 
-## model.Summarize() 
+You can use a collection of strings as categories as well.
+```csharp
+var classification = await model.ClassifyAsync<string>(item, new [] {"Rock","Pop","Electronica","Country","Classical"});
+```
+
+## model.SummarizeAsync() 
 Summarize the item 
 
 ```csharp
-var summary = model.Summarize(item, "with 3 words");
+var summary = await model.SummarizeAsync(item, "with 3 words");
 ```
 
-## model.Matches() 
+## model.MatchesAsync() 
 Get true/false if the item matches the question
+
 ```csharp
-if (model.Matches(item, "there is date"))
+if (await model.MatchesAsync(item, "there is date"))
   ...
 ```
 
-## model.Query() 
+## model.QueryAsync() 
 Ask a question using models knowledge.
 
 ```csharp
-var answer = model.Query("what is the birthday of barack obama?");
+var answer = await model.QueryAsync("what is the birthday of barack obama?");
 ```
 
-## model.QueryAbout() 
+Query can take a typed output
+```csharp
+var date = await model.QueryAsync<int>("what is the day of the month for the birthday of barack obama?");
+```
+
+
+## model.QueryAboutAsync() 
 Ask a question about an item
 
 ```csharp
-var answer = model.QueryAbout(item, "what is his birthday?");
+var answer = await model.QueryAboutAsync(item, "what is his birthday?");
 ```
 
-## model.Select() 
+It also can take a typed output
+```csharp
+var date = await model.QueryAboutAsync<int>(person, "how tall is he in inches?");
+```
+
+## model.ExtractAsync() 
 Extracts a collection of items from the item.
 
 Example using model to select text from the item
 ```csharp
-var words = model.Select<string>(item, "The second word of every paragraph");
+var words = await model.ExtractAsync<string>(item, "The second word of every paragraph");
 ```
 
-Example using model to select structed data.
+You can use the model to select structured data.
 ```csharp
 public class HREF 
 { 
 	public string Url {get;set;}
 	public string Title {get;set;}
 }
-var summary = model.Select<HREF>(item);
+
+var hrefs = await model.ExtractAsync<HREF>(item).ToListAsync();
 ```
 
 ## model.Compare()
 Compares two objects for semantic equivelancy.
 
 ```csharp
-Assert.IsTrue(Model.Compare("fourteen", "14"));
-Assert.IsTrue(Model.Compare("fourteen years old", "10 + 4 years"));
-Assert.IsTrue(Model.Compare("Me llamo Tom", "Mi nombre es Tom"));
-Assert.IsTrue(Model.Compare("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
-Assert.IsFalse(Model.Compare("Me llamo Tom", "Mi padre es Tom"));
+Assert.IsTrue(await Model.CompareAsync("fourteen", "14"));
+Assert.IsTrue(await Model.CompareAsync("fourteen years old", "10 + 4 years"));
+Assert.IsTrue(await Model.CompareAsync("Me llamo Tom", "Mi nombre es Tom"));
+Assert.IsTrue(await Model.CompareAsync("My name is Tom", "Mi nombre es Tom", instructions: "allow different langauges to be semantically equal"));
+Assert.IsFalse(await Model.CompareAsync("Me llamo Tom", "Mi padre es Tom"));
 Assert.IsTrue(await Model.CompareAsync(
 	new 
 	{ 
@@ -112,27 +130,24 @@ The object extensions use the ITransformer model to work each item in a collecti
 
 | Extension | Description | 
 | ----------| ------------|
-| ***.Select()*** | Transforms each item into another format with natural language. |
-| ***.Where()*** | Keeps each item which matches with natural language filter. |
-| ***.Remove()*** | Remove each item which matches a natural language filter. |
-| ***.Classify()*** | Classify each item. |
-| ***.Summarize()*** | Create a summarization for each item. |
-| ***.QueryAboutEach()*** | Gets the question to a question about each item. |
+| ***.SelectAsync()*** | Transforms each item into another format with natural language. |
+| ***.WhereAsync()*** | Keeps each item which matches with natural language filter. |
+| ***.ClassifyAsync()*** | Classify each item. |
+| ***.SummarizeAsync()*** | Create a summarization for each item. |
+| ***.QueryAboutEachAsync()*** | Gets the question to a question about each item. |
 
-> NOTE: These methods internally run AI calls as throttled parallel background tasks.
-
-## enumerable.Select() 
-.Select() let's you transform the source into target using an ITransformer model.
+## enumerable.SelectAsync() 
+.SelectAsync() let's you transform the source into target using an ITransformer model.
 
 You can use it to transform an object from one format to another by simply giving the types. The model
 will use AI to appropriately map the properties between the object types.
 ```csharp
-var targetItems = items.Select<SourceItem,TargetItem>(model)
+var targetItems = await items.SelectAsync<SourceItem,TargetItem>(model).ToListAsync();
 ```
 
 Transform a collection of text into another format, like markdown.
 ```csharp
-var markdownItems = items.Select(model,	goal: """"
+var markdownItems = awit items.SelectAsync(model,	goal: """"
 					transform each item into markdown like this:
 					# {{TITLE}}
 					{{AUTHOR}}
@@ -140,38 +155,37 @@ var markdownItems = items.Select(model,	goal: """"
 					""");
 ```
 
-## enumerable.Where()/enumerable.Remove() 
+## enumerable.WhereAsync()
 Filter a collection using natural language
 ```csharp
-var smallItems = items.Where(model, "item would fit in a bread box");
-var bigItems = items.Remove(model, "item would fit in a bread box");
+var smallItems = await items.WhereAsync(model, "item would fit in a bread box");
 ```
 
 
-## enumerable.Classify() 
+## enumerable.ClassifyAsync() 
 This allows you to classify each item using a model;
 ```csharp
 enum Genres { Rock, Pop, Electronica, Country, Classical };
-var classifiedItems = items.Classify<Genres>(model);
+var classifiedItems = await items.ClassifyAsync<Genres>(model);
 ```
 
 
-## enumerable.Summarize() 
+## enumerable.SummarizeAsync() 
 Generate text summary for each item using an ITransformer model.
 
 ```chsarp
-var summaries = items.Summarize(model);
+var summaries = await items.SummarizeAsync(model);
 ```
 
 You can control the summarization with a hint
 ```csharp
-var summaries = items.Summarize(model, "generate a 3 word summary");
+var summaries = await items.SummarizeAsync(model, "generate a 3 word summary");
 ```
 
 ## enumerable.QueryAboutEach() 
 This operator let's you ask a question for each item in a collection.
 ```csharp
-var answers = items.QueryAboutEach<float>(model, "What is the cost?");
+var answers = await items.QueryAboutEachAsync<float>(model, "What is the cost?");
 ```
 
 # ITransformer 
@@ -179,30 +193,30 @@ The ITransformer implements the core primatives for using AI to manipulate gener
 
 | Extension | Description | 
 | ----------| ------------|
-| ***.Generate()/.GenerateAsync()*** | use a model and a goal to return a shaped result. |
-| ***.TransformItem()/.TransformItemAsync()*** | use a model and a goal to transform an item into a shaped result. |
-| ***.TransformItems()*** | use a model and a goal to transform a collection of items into a collection of shaped results. |
+| ***.GenerateAsync()*** | use a model and a goal to return a shaped result. |
+| ***.TransformItemAsync()*** | use a model and a goal to transform an item into a shaped result. |
+| ***.TransformItemsAsync()*** | use a model and a goal to transform a collection of items into a collection of shaped results. |
 
-## transformer.Generate()
+## transformer.GenerateAsync()
 Given a model and a goal return a shaped result.
 ```csharp
-var haiku = transformer.Generate<string>("write a haiku about camping");
-var names = transformer.Generate<string[]>("funny names for people named bob");
-var cities = transformer.Generate<City[]>("return the top 5 largest cities in the world.");
+var haiku = await transformer.GenerateAsync<string>("write a haiku about camping");
+var names = await transformer.GenerateAsync<string[]>("funny names for people named bob");
+var cities = await transformer.GenerateAsync<City[]>("return the top 5 largest cities in the world.");
 ```
 
-## transformer.TransformItem()
+## transformer.TransformItemAsync()
 Given a model and a goal return a shaped result.
 ```csharp
-var result = model.TransformItem<string>("my name is Tom", "translate to spanish);
+var result = await model.TransformItemAsync<string>("my name is Tom", "translate to spanish);
 // ==> "Me llamo Tom"
 ```
 
-## transformer.TransformItems()
+## transformer.TransformItemsAsync()
 Transform a collection of items using a model and a goal.
 ```csharp
 var items = new string[] {"Hello", "My name is Tom", "One more please"];
-var results = items.TransformItems(model, "translate to spanish);
+var results = await items.TransformItemsAsync(model, "translate to spanish);
 // result[0] = "Hola"
 // result[1] = "Me llamo Tom"
 // result[2] = "Una mas, por favor"
@@ -273,7 +287,7 @@ var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>")
 
 Now if query needs the result of the function it will just work
 ```csharp
-    model.Generate<double>("What's the powpow for 3 and 4?");
+    await model.GenerateAsync<double>("What's the powpow for 3 and 4?");
 ```
 
 # InstructionAttribute
@@ -295,34 +309,18 @@ public class LeaderInfo
     [Instruction("The year they took the role.")]
     public int? Date { get; set;}
 }
-var leader = model.Query<LeaderInfo>("barack obama");
+var leader = await model.QueryAsync<LeaderInfo>("barack obama");
 // {"Name":"United States","Title":"President","FullName":"Barack Hussein Obama II","Date":2009}
 ```
 
-# Defining new operators
-To create a custom operator you create an static class and define static methods for the ITransformer or collection of objects.
-
-For example, here is the implementation of Summarize():
-
-* The ***SummarizeAsync()*** method defines object operator which calls **TransformItemAsync** with a default goal of "Create a summarization" with result type of string.
-* The ***Summarize()*** method defines a collection operator which calls **TransformItems** with a default goal of "Create a summarization" with result type for each item in the collection of string.
-
-```csharp
-    public static class SummarizeExtension
-    {
-        // operator to summarize object
-        public static string Summarize(this ITransformer model, object item, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItem<string>(item, goal ?? "create a summarization", instructions, cancellationToken);
-
-        // operator to summarize object
-        public static Task<string> SummarizeAsync(this ITransformer model, object item, string? goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => model.TransformItemAsync<string>(item, goal ?? "create a summarization", instructions, cancellationToken);
-
-        // operator to summarize collection of objects
-        public static IList<string> Summarize(this IEnumerable<object> source, ITransformer model, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
-            => model.TransformItems<string>(source, goal ?? "create a summarization", instructions, maxParallel, cancellationToken);
-    }
-```
-
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
+
+# Changes
+## V2
+* Made all methods Async
+* Added IAsyncEnumerable support
+* Removed parallel processing, you should use Plinq.NET directly
+
+## V1
+* Basic library
 

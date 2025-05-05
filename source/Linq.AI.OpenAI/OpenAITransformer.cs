@@ -150,51 +150,24 @@ namespace Linq.AI.OpenAI
         /// <summary>
         /// Generate an item of shape T based on "goal"
         /// </summary>
-        /// <typeparam name="ResultT">type of items</typeparam>
-        /// <param name="source">collection of items</param>
-        /// <param name="constraint">The constraint to match to remove an item</param>
-        /// <param name="instructions">(OPTIONAL) additional instructions</param>
-        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
-        /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
-        /// <returns>collection of items which didn't match the goal</returns>
-        public ResultT Generate<ResultT>(string goal, string? instructions = null, CancellationToken cancellationToken = default)
-            => TransformItem<ResultT>(String.Empty, goal, instructions, cancellationToken);
-
-        /// <summary>
-        /// Generate an item of shape T based on "goal"
-        /// </summary>
         /// <typeparam name="T">type of items</typeparam>
-        /// <param name="source">collection of items</param>
-        /// <param name="constraint">The constraint to match to remove an item</param>
+        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
         /// <param name="instructions">(OPTIONAL) additional instructions</param>
-        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of items which didn't match the goal</returns>
-        public Task<ResultT> GenerateAsync<ResultT>(string goal, string? instructions = null, CancellationToken cancellationToken = default)
+        public ValueTask<ResultT> GenerateAsync<ResultT>(string goal, string? instructions = null, CancellationToken cancellationToken = default)
             => TransformItemAsync<ResultT>(String.Empty, goal, instructions, cancellationToken);
 
-        /// <summary>
-        /// Transform text using OpenAI model
-        /// </summary>
-        /// <param name="item">item to Transform</param>
-        /// <param name="model">ChatClient to use as model</param>
-        /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
-        /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
-        /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
-        /// <returns>transformed text</returns>
-        public ResultT TransformItem<ResultT>(object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
-            => TransformItemAsync<ResultT>(item, goal, instructions, cancellationToken).Result;
 
         /// <summary>
         /// Transform item using OpenAI model
         /// </summary>
         /// <param name="item">item to Transform</param>
-        /// <param name="model">ChatClient to use as model</param>
         /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
         /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>transformed text</returns>
-        public async Task<ResultT> TransformItemAsync<ResultT>(object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
+        public async ValueTask<ResultT> TransformItemAsync<ResultT>(object item, string? goal = null, string? instructions = null, CancellationToken cancellationToken = default)
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
             var responseFormat = ChatResponseFormat.CreateJsonSchemaFormat("Transform", jsonSchema: BinaryData.FromString(schema), jsonSchemaIsStrict: true);
@@ -215,7 +188,7 @@ namespace Linq.AI.OpenAI
                     context.Options.Tools.Add(tool);
             }
 
-            context.Messages.Add(GetTransformerSystemPrompt(goal ?? "Transform", instructions));
+            context.Messages.Add(GetTransformerSystemPrompt(goal ?? "Transform", instructions)); 
             context.Messages.Add(GetTransformerItemMessage(item));
 
             Debug.WriteLine("===============================================");
@@ -317,24 +290,31 @@ namespace Linq.AI.OpenAI
         }
 
         /// <summary>
-        /// Transform items using pool of background tasks and AI model
+        /// Transform items 
+        /// </summary>
+        /// <typeparam name="ResultT"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="goal"></param>
+        /// <param name="instructions"></param>
+        /// <returns></returns>
+        public IAsyncEnumerable<ResultT> TransformItemsAsync<ResultT>(IEnumerable<object> source, string? goal = null, string? instructions = null)
+            => this.TransformItemsAsync<ResultT>(source.ToAsyncEnumerable(), goal, instructions);
+
+        /// <summary>
+        /// Transform items using AI model
         /// </summary>
         /// <typeparam name="ResultT">result type</typeparam>
         /// <param name="source">source collection</param>
-        /// <param name="model">ai model to use</param>
         /// <param name="goal">(OPTIONAL) Goal for what you want to Transform</param>
         /// <param name="instructions">(OPTIONAL) additional instructions for how to transform</param>
-        /// <param name="maxParallel">(OPTIONAL) max parallel operations</param>
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>transformed results</returns>
-        public IList<ResultT> TransformItems<ResultT>(IEnumerable<object> source, string? goal = null, string? instructions = null, int? maxParallel = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<ResultT> TransformItemsAsync<ResultT>(IAsyncEnumerable<object> source, string? goal = null, string? instructions = null)
         {
             var schema = StructuredSchemaGenerator.FromType<Transformation<ResultT>>().ToString();
-            var count = source.Count();
 
-            return source.SelectParallelAsync((item, index, ct) =>
-                    TransformItemAsync<ResultT>(item, goal, Utils.GetItemIndexClause((int)index, (int)count, instructions), cancellationToken),
-                    maxParallel: maxParallel ?? 2 * Environment.ProcessorCount, cancellationToken);
+            return source.SelectAwaitWithCancellation((item, index, ct) =>
+                    TransformItemAsync<ResultT>(item, goal, Utils.GetItemIndexClause((int)index, instructions), ct));
         }
 
         internal static SystemChatMessage GetTransformerSystemPrompt(string goal, string? instructions = null)
@@ -399,6 +379,5 @@ namespace Linq.AI.OpenAI
                     """);
             }
         }
-
     }
 }
