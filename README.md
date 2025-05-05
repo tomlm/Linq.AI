@@ -316,11 +316,12 @@ var leader = await model.QueryAsync<LeaderInfo>("barack obama");
 > This library was heaviy inspired by stevenic's [agentm-js](https://github.com/stevenic/agentm-js) library, Kudos!
 
 # Changes
-## V2
+
+## V3
 * Made all methods Async
 * Added IAsyncEnumerable support
 * Removed parallel processing, you should use Plinq.NET directly
 
-## V1
-* Basic library
+## V1, V2
+* Basic library using parallel internal and non-async processing.
 
