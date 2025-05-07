@@ -17,7 +17,7 @@ namespace Linq.AI.Microsoft
         /// <summary>
         /// Last completion
         /// </summary>
-        public ChatResponse  Result { get; set; } = null!;
+        public ChatResponse Result { get; set; } = null!;
 
         /// <summary>
         /// Last completion

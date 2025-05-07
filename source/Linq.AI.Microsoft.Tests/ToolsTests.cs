@@ -1,9 +1,5 @@
 using Microsoft.Extensions.AI;
-using Newtonsoft.Json;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Linq.AI.Microsoft.Tests
 {

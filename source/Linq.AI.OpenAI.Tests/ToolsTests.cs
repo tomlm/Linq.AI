@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Linq.AI.OpenAI.Tests
@@ -10,7 +9,7 @@ namespace Linq.AI.OpenAI.Tests
     public class ToolsTests : UnitTestBase
     {
 
-        public override ITransformer GetModel(string modelName="gpt-4o")
+        public override ITransformer GetModel(string modelName = "gpt-4o")
         {
             var model = base.GetModel(modelName) as OpenAITransformer;
 

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace Linq.AI
 {
 
-    
+
     public static class CompareExtension
     {
         /// <summary>
@@ -28,7 +28,7 @@ namespace Linq.AI
 			
 			<ITEM2>
 			{item2Text}
-			""", 
+			""",
             "are <ITEM1> and <ITEM2> semantically equivelent?", instructions, cancellationToken);
         }
 

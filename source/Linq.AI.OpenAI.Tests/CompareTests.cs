@@ -19,10 +19,10 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Compare_Objects_Semantically()
         {
             Assert.IsTrue(await GetModel().CompareAsync(
-                new 
-                { 
-                    Introduction = "My name is Tom", 
-                    Background="I live in Kirkland, Washington"
+                new
+                {
+                    Introduction = "My name is Tom",
+                    Background = "I live in Kirkland, Washington"
                 },
                 new
                 {

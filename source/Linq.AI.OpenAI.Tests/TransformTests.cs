@@ -1,6 +1,4 @@
 using OpenAI.Chat;
-using System;
-using System.Diagnostics;
 
 namespace Linq.AI.OpenAI.Tests
 {
@@ -225,7 +223,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_PartsTest()
         {
-            var result = await GetModel().MatchesAsync(new []
+            var result = await GetModel().MatchesAsync(new[]
             {
                 ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg")),
                 ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg"))

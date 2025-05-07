@@ -1,10 +1,5 @@
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-using Newtonsoft.Json.Linq;
-using OpenAI.Chat;
-using System.Diagnostics;
-using System.Reflection;
-
 
 namespace Linq.AI.OpenAI.Tests
 {
@@ -97,7 +92,7 @@ namespace Linq.AI.OpenAI.Tests
                 await GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states"),
                 await GetModel().GenerateAsync<PresidentInfo[]>("complete list of all presidents of the united states")
             };
-            
+
             var result = GetModel().CompareAsync(results[0], results[1]);
         }
     }

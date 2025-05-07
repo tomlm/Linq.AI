@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Linq.AI
+﻿namespace Linq.AI
 {
 
     internal class WhereItem

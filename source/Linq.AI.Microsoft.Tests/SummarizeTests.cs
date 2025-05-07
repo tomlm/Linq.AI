@@ -14,7 +14,7 @@ namespace Linq.AI.Microsoft.Tests
                 "https://raw.githubusercontent.com/tomlm/Crazor/main/docs/CardView.md"
             ];
             HttpClient httpClient = new HttpClient();
-            foreach(var url in urls)
+            foreach (var url in urls)
                 yield return await httpClient.GetStringAsync(url);
         }
 

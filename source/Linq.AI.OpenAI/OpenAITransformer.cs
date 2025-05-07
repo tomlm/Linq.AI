@@ -188,7 +188,7 @@ namespace Linq.AI.OpenAI
                     context.Options.Tools.Add(tool);
             }
 
-            context.Messages.Add(GetTransformerSystemPrompt(goal ?? "Transform", instructions)); 
+            context.Messages.Add(GetTransformerSystemPrompt(goal ?? "Transform", instructions));
             context.Messages.Add(GetTransformerItemMessage(item));
 
             Debug.WriteLine("===============================================");

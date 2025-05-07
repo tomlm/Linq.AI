@@ -1,7 +1,4 @@
 using Microsoft.Extensions.AI;
-using OpenAI.Chat;
-using System;
-using System.Diagnostics;
 
 namespace Linq.AI.Microsoft.Tests
 {
@@ -226,7 +223,7 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Transform_PartsTest()
         {
-            var result = await GetModel().MatchesAsync(new []
+            var result = await GetModel().MatchesAsync(new[]
             {
                 new UriContent("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg", "image/jpeg"),
                 new UriContent("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg", "image/jpeg")

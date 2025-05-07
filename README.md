@@ -4,19 +4,14 @@ This library adds Linq extension methods which use AI models to transform and ma
 ## Installation
 ```
 dotnet add package Linq.AI
-dotnet add package Linq.AI.OpenAI
 ```
 
 ## ITransformer 
-The Linq.AI package needs an ITransformer for the AI model that is being used. 
+The core Linq.AI package.  
 
-Currently there is an implementation for OpenAI which you can get by installing Linq.AI.OpenAI
-
-You instantiate a transformer like this:
-```csharp
-var model = new OpenAITransformer(model: "gpt-4o-mini", new ApiKeyCredential("<openai.apikey>"));
-```
-> NOTE: The model must support structured output.
+There are currently 2 implementations:
+* **Linq.AI.OpenAI** - OpenAI API transformer implementation
+* **Linq.AI.Microsoft** - Microsoft.Extensions.AI IChatClient transformer implementation (ex: OLlama)
 
 # Model Extensions
 The model extensions add methods to the ITransformer model to work with a single item (aka text, object, etc.).
@@ -188,39 +183,6 @@ This operator let's you ask a question for each item in a collection.
 var answers = await items.QueryAboutEachAsync<float>(model, "What is the cost?");
 ```
 
-# ITransformer 
-The ITransformer implements the core primatives for using AI to manipulate generation and transformation.
-
-| Extension | Description | 
-| ----------| ------------|
-| ***.GenerateAsync()*** | use a model and a goal to return a shaped result. |
-| ***.TransformItemAsync()*** | use a model and a goal to transform an item into a shaped result. |
-| ***.TransformItemsAsync()*** | use a model and a goal to transform a collection of items into a collection of shaped results. |
-
-## transformer.GenerateAsync()
-Given a model and a goal return a shaped result.
-```csharp
-var haiku = await transformer.GenerateAsync<string>("write a haiku about camping");
-var names = await transformer.GenerateAsync<string[]>("funny names for people named bob");
-var cities = await transformer.GenerateAsync<City[]>("return the top 5 largest cities in the world.");
-```
-
-## transformer.TransformItemAsync()
-Given a model and a goal return a shaped result.
-```csharp
-var result = await model.TransformItemAsync<string>("my name is Tom", "translate to spanish);
-// ==> "Me llamo Tom"
-```
-
-## transformer.TransformItemsAsync()
-Transform a collection of items using a model and a goal.
-```csharp
-var items = new string[] {"Hello", "My name is Tom", "One more please"];
-var results = await items.TransformItemsAsync(model, "translate to spanish);
-// result[0] = "Hola"
-// result[1] = "Me llamo Tom"
-// result[2] = "Una mas, por favor"
-```
 
 ## Linq.AI and Vision
 You can use Linq.AI and the model to work with images.  

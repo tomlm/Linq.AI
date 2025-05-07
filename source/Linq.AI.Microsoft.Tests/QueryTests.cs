@@ -1,5 +1,4 @@
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-using Crazor;
 using Newtonsoft.Json.Linq;
 
 namespace Linq.AI.Microsoft.Tests
@@ -15,7 +14,7 @@ namespace Linq.AI.Microsoft.Tests
 
 
     [TestClass]
-    public class QueryAboutTests: UnitTestBase
+    public class QueryAboutTests : UnitTestBase
     {
         public List<Weather> Forecast = JArray.Parse("""
             [
@@ -101,8 +100,8 @@ namespace Linq.AI.Microsoft.Tests
             var results = await Forecast
                 .QueryAboutAsync<int>(GetModel(), "What is the temperature difference as an integer?")
                 .ToListAsync();
-            
-            for(int i=0; i < Forecast.Count;i++)
+
+            for (int i = 0; i < Forecast.Count; i++)
             {
                 Assert.AreEqual(Forecast[0].High - Forecast[0].Low, results[0]);
             }

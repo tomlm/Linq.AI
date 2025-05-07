@@ -9,7 +9,7 @@
   <PropertyGroup>
     <Version>3.0.1</Version>
     <AssemblyVersion>3.0.1.0</AssemblyVersion>
-    <Description>Linq.AI ITransformer using OpenAI structured output.</Description>
+    <Description>Linq.AI ITransformer implementation for OpenAI API.</Description>
     <Company>Iciclecreek</Company>
     <Authors>Tom Laird-McConnell</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="../../README.md" Pack="true" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="../../icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 

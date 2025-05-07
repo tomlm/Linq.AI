@@ -73,7 +73,7 @@ namespace Linq.AI
         /// <param name="instructions"></param>
         /// <returns></returns>
         public static IAsyncEnumerable<ClassifiedItem<ItemT, string>> ClassifyAsync<ItemT>(this IEnumerable<ItemT> source, ITransformer model, IList<string> categories, string? instructions = null)
-            where ItemT: class
+            where ItemT : class
             => source
                 .ToAsyncEnumerable()
                 .ClassifyAsync<ItemT>(model, categories, instructions);
@@ -86,7 +86,7 @@ namespace Linq.AI
         /// <param name="model"></param>
         /// <param name="instructions"></param>
         /// <returns></returns>
-        public static IAsyncEnumerable<ClassifiedItem<ItemT, EnumT>> ClassifyAsync<ItemT,EnumT>(this IEnumerable<ItemT> source, ITransformer model, string? instructions = null)
+        public static IAsyncEnumerable<ClassifiedItem<ItemT, EnumT>> ClassifyAsync<ItemT, EnumT>(this IEnumerable<ItemT> source, ITransformer model, string? instructions = null)
             where EnumT : struct, Enum
             => source
                 .ToAsyncEnumerable()

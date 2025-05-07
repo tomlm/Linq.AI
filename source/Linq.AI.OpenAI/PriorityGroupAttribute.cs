@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Linq.AI.OpenAI
+﻿namespace Linq.AI.OpenAI
 {
     /// <summary>
     /// PriorityGroup on a method

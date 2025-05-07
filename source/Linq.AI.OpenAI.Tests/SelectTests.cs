@@ -1,13 +1,3 @@
-using static System.Collections.Specialized.BitVector32;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.Metrics;
-using System.Drawing;
-using System.Reflection.Emit;
-using System.Threading;
-using System;
-
 namespace Linq.AI.OpenAI.Tests
 {
 
@@ -60,7 +50,7 @@ namespace Linq.AI.OpenAI.Tests
             var results = await GetModel().ExtractAsync<Article>(Text, "turn each section into an article");
 
             Assert.IsTrue(results.Count > 1);
-            foreach(var result in results)
+            foreach (var result in results)
             {
                 Assert.IsNotNull(result.Title);
                 Assert.IsNotNull(result.Paragraph);

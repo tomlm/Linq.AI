@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using OpenAI.Chat;
 using System.ClientModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -62,7 +61,7 @@ namespace Linq.AI.OpenAI.Tests
 
     public class UnitTestBase
     {
-        public virtual ITransformer GetModel(string modelName="gpt-4o-mini")
+        public virtual ITransformer GetModel(string modelName = "gpt-4o-mini")
         {
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()

@@ -1,7 +1,4 @@
-﻿
-using System.Runtime.CompilerServices;
-
-namespace Linq.AI
+﻿namespace Linq.AI
 {
     public static class AnswerExtension
     {

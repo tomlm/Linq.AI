@@ -1,6 +1,3 @@
-using System.ComponentModel;
-using DescriptionAttribute = System.ComponentModel.DescriptionAttribute;
-
 namespace Linq.AI.OpenAI.Tests
 {
 
@@ -35,7 +32,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Generate_Collection_Text2()
         {
             var results = await GetModel().GenerateAsync<string[]>("a list of funny names for people named bob");
-            foreach(var result in results)
+            foreach (var result in results)
             {
                 Assert.IsTrue(result.ToLower().Contains("bob"));
             }
@@ -47,7 +44,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Generate_Collections_Object()
         {
             var generated = await GetModel().GenerateAsync<CityObject[]>("return the top 5 largest cities in the world.");
-            Assert.IsTrue(generated.Any(item => item.Name == "Mexico City" && item.Country == "Mexico" ));
+            Assert.IsTrue(generated.Any(item => item.Name == "Mexico City" && item.Country == "Mexico"));
             Assert.AreEqual(5, generated.Count());
         }
 
