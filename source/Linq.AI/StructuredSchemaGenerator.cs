@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace Linq.AI.OpenAI
+namespace Linq.AI
 {
 
     public class StructuredSchemaGenerator

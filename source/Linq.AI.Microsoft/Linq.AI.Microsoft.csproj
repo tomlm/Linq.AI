@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>3.0.0</Version>
-    <AssemblyVersion>3.0.0.0</AssemblyVersion>
-    <Description>Linq extensions for AI transformations.</Description>
+    <Version>3.0.1</Version>
+    <AssemblyVersion>3.0.1.0</AssemblyVersion>
+    <Description>Linq.AI ITransformer using any Microsoft.Extensions.AI IChatClient</Description>
     <Company>Iciclecreek</Company>
     <Authors>Tom Laird-McConnell</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -20,20 +20,25 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/tomlm/Linq.AI</RepositoryUrl>
     <Copyright>Tom Laird-McConnell All Rights Reserved</Copyright>
-    <RootNamespace>Linq.AI</RootNamespace>
+    <RootNamespace>Linq.AI.Microsoft</RootNamespace>
     <ContentTargetFolders>content</ContentTargetFolders>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="../../README.md" Pack="true" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="../../icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Iciclecreek.Async" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="9.4.3-preview.1.25230.7" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="MimeTypes" Version="2.5.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Linq.AI\Linq.AI.csproj" />
+  </ItemGroup>
 </Project>

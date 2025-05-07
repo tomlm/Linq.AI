@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Linq.AI.OpenAI.Tests", "Lin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linq.AI", "Linq.AI\Linq.AI.csproj", "{1B7B69A6-2F2D-4477-A5CC-E8BD8DAB0B7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linq.AI.Microsoft", "Linq.AI.Microsoft\Linq.AI.Microsoft.csproj", "{5F9F5725-2712-4748-B5A7-E2D83AB0EDDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linq.AI.Microsoft.Tests", "Linq.AI.Microsoft.Tests\Linq.AI.Microsoft.Tests.csproj", "{9384E58F-D144-4ADC-837F-D93919D945C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{1B7B69A6-2F2D-4477-A5CC-E8BD8DAB0B7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B7B69A6-2F2D-4477-A5CC-E8BD8DAB0B7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B7B69A6-2F2D-4477-A5CC-E8BD8DAB0B7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F9F5725-2712-4748-B5A7-E2D83AB0EDDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F9F5725-2712-4748-B5A7-E2D83AB0EDDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F9F5725-2712-4748-B5A7-E2D83AB0EDDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F9F5725-2712-4748-B5A7-E2D83AB0EDDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9384E58F-D144-4ADC-837F-D93919D945C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9384E58F-D144-4ADC-837F-D93919D945C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9384E58F-D144-4ADC-837F-D93919D945C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9384E58F-D144-4ADC-837F-D93919D945C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

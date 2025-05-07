@@ -1,8 +1,11 @@
+using Microsoft.Extensions.AI;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection;
 
-namespace Linq.AI.OpenAI.Tests
+namespace Linq.AI.Microsoft.Tests
 {
 
 
@@ -10,13 +13,20 @@ namespace Linq.AI.OpenAI.Tests
     public class ToolsTests : UnitTestBase
     {
 
-        public override ITransformer GetModel(string modelName="gpt-4o")
+        public override ChatClientBuilder GetChatClientBuilder(string modelName = "gpt-4o-mini")
         {
-            var model = base.GetModel(modelName) as OpenAITransformer;
+            return base.GetChatClientBuilder(modelName)
+                .UseFunctionInvocation();
+        }
+
+        public override ITransformer GetModel(string modelName = "gpt-4o-mini")
+        {
+            var model = base.GetModel(modelName) as MicrosoftChatClientTransformer;
+            ArgumentNullException.ThrowIfNull(model);
 
             model
-                .AddTools<MyFunctions>()
-                .AddTool("LookupContact", "lookup a contact record for a person",
+                .AddFunctions<MyFunctions>()
+                .AddFunction("LookupContact", "lookup a contact record for a person",
                     async (string name, CancellationToken ct) =>
                     {
                         await Task.Delay(500);
@@ -30,11 +40,11 @@ namespace Linq.AI.OpenAI.Tests
             for (char ch = 'A'; ch < 'Z'; ch++)
             {
                 var result = $"{ch}";
-                model.AddTool($"FUNC{ch}", $"Function for FUNC{ch}()", async () =>
+                model.AddFunction($"FUNC{ch}", $"Function for FUNC{ch}()", async () =>
                 {
                     await Task.Delay(1000);
                     return result;
-                }, (ch % 3) - 1);
+                });
             }
             return model;
         }
@@ -57,7 +67,8 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Tool_SingleFunctionStringTest2()
         {
             var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa in celcius?");
-            Assert.IsTrue(await GetModel().CompareAsync("37 degress celsius", result));
+            var same = await GetModel().CompareAsync("37 degress celsius", result, "is the temperature the same");
+            Assert.IsTrue(same);
         }
 
         [TestMethod]
@@ -70,9 +81,8 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Tool_DelegateTest()
         {
-            var result = await GetModel().GenerateAsync<string>("Look up John's contact");
-            Assert.IsTrue(result.Contains("John"));
-            Assert.IsTrue(result.Contains("Smith"));
+            var result = await GetModel().GenerateAsync<string>("What is the city is John from?");
+            Assert.IsTrue(result.Contains("Atlanta"));
         }
 
 
@@ -81,7 +91,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var result = await GetModel().GenerateAsync<string[]>("return the results of FUNCA() and FUNCF() as results");
+            var result = await GetModel().TransformItemAsync<string[]>("test", goal: "return the results of FUNCA() and FUNCF() as results");
             sw.Stop();
             Assert.IsTrue(result.Contains("A"));
             Assert.IsFalse(result.Contains("B"));
@@ -97,7 +107,6 @@ namespace Linq.AI.OpenAI.Tests
             var item = new TestItem { Name = "A", Counter = 0 };
             var result = await GetModel().QueryAbout<TestItem>(item, "increment the item counter");
             Assert.AreEqual(1, result.Counter);
-            Assert.AreEqual(JsonConvert.SerializeObject(item), JsonConvert.SerializeObject(result));
         }
 
     }

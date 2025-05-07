@@ -1,4 +1,4 @@
-﻿namespace Linq.AI.OpenAI.Tests
+﻿namespace Linq.AI.Microsoft.Tests
 {
     internal class TestObject
     {

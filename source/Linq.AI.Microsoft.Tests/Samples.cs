@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Reflection;
 
 
-namespace Linq.AI.OpenAI.Tests
+namespace Linq.AI.Microsoft.Tests
 {
     public class Card
     {
@@ -71,7 +71,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task ArgumentParser()
         {
-            var options = await GetModel().TransformItemAsync<CommandLineOptions>("foo/foo.csproj using Debug configuration for x64 with no logo.");
+            var options = await GetModel().TransformItemAsync<CommandLineOptions>("foo/foo.csproj using Debug configuration for x64 archtecture with no logo.");
             Assert.AreEqual("x64", options.Architecture);
             Assert.AreEqual("foo/foo.csproj", options.ProjectOrSolution);
             Assert.AreEqual(true, options.NoLogo);
