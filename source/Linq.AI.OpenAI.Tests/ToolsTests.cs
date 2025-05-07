@@ -56,7 +56,7 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Tool_SingleFunctionStringTest2()
         {
             var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa in celcius?");
-            Assert.IsTrue(await GetModel().CompareAsync("37 degress celsius", result));
+            Assert.IsTrue(await GetModel().CompareAsync("37 degress celsius", result, instructions: "Is the temperature the same"));
         }
 
         [TestMethod]
