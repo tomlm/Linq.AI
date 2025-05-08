@@ -67,8 +67,11 @@ namespace Linq.AI.Microsoft.Tests
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()
                 .Build();
+            IChatClient chatClient =
+                new OpenAI.Chat.ChatClient(modelName, config["OpenAIKey"]).AsIChatClient();
+                //new OllamaChatClient(new Uri("http://localhost:11434/"), "phi4");
 
-            return new ChatClientBuilder(new OpenAI.Chat.ChatClient("gpt-4o-mini", config["OpenAIKey"]).AsIChatClient());
+            return new ChatClientBuilder(chatClient);
         }
 
         public virtual ITransformer GetModel(string modelName = "gpt-4o-mini")
