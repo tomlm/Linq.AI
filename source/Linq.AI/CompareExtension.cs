@@ -1,5 +1,8 @@
 ﻿
 using Newtonsoft.Json;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Linq.AI
 {
@@ -22,14 +25,15 @@ namespace Linq.AI
             item2 = item2 ?? String.Empty;
             string item1Text = ((item1 is string) ? item1 as string : JsonConvert.SerializeObject(item1))!;
             string item2Text = ((item2 is string) ? item2 as string : JsonConvert.SerializeObject(item2))!;
-            return transformer.TransformItemAsync<bool>($"""
-			<ITEM1>
-			{item1Text}
+            return transformer.TransformItemAsync<bool>(
+                $"""
+			    <ITEM1>
+			    {item1Text}
 			
-			<ITEM2>
-			{item2Text}
-			""",
-            "are <ITEM1> and <ITEM2> semantically equivelent?", instructions, cancellationToken);
+			    <ITEM2>
+			    {item2Text}
+			    """,
+                "are <ITEM1> and <ITEM2> semantically equivelent?", instructions, cancellationToken);
         }
 
     }

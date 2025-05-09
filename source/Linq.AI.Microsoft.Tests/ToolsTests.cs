@@ -55,7 +55,7 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Tool_SingleFunctionStringTest()
         {
-            var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa?");
+            var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa in farenheit?");
             Assert.IsTrue(await GetModel().CompareAsync("100 farenheit", result));
         }
 

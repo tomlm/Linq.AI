@@ -5,8 +5,8 @@
         public static string GetItemIndexClause(int index, string? instructions)
         {
             return $"""
-                    First Index: 0
-                    This Item Index: {index} 
+                    The collection starts with Index: 0
+                    This Item's Index is: {index} 
                     {instructions ?? string.Empty}
                     """;
             //return $"""

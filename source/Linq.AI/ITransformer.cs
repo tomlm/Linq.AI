@@ -1,4 +1,8 @@
-﻿namespace Linq.AI
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Linq.AI
 {
     /// <summary>
     /// AI Transformer interface

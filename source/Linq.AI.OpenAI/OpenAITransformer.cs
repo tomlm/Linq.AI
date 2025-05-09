@@ -3,12 +3,17 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenAI;
 using OpenAI.Chat;
+using System;
 using System.ClientModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Linq.AI.OpenAI
 {
@@ -103,9 +108,9 @@ namespace Linq.AI.OpenAI
         /// <exception cref="Exception"></exception>
         public OpenAITransformer AddTool(string name, string description, Delegate del, int priorityGroup = 0)
         {
-            ArgumentNullException.ThrowIfNull(name);
-            ArgumentNullException.ThrowIfNull(description);
-            ArgumentNullException.ThrowIfNull(del);
+            if (name == null) throw new ArgumentNullException(name);
+            if (description == null) throw new ArgumentNullException(description);
+            if (del == null) throw new ArgumentNullException(description);
             var methodInfo = del.Method;
             string toolName = (methodInfo.DeclaringType!.Name.StartsWith("<")) ? name : $"{methodInfo.DeclaringType.Name}_{name}";
 
@@ -117,7 +122,7 @@ namespace Linq.AI.OpenAI
 
             foreach (var parameter in methodInfo.GetParameters().Where(parm => parm.ParameterType != typeof(CancellationToken) && parm.ParameterType != typeof(CompletionContext)))
             {
-                ArgumentNullException.ThrowIfNull(parameter?.Name);
+                if (parameter?.Name == null) throw new ArgumentNullException(nameof(parameter));
 
                 var parmSchema = StructuredSchemaGenerator.FromType(parameter.ParameterType);
                 bool propRequired = parameter.GetCustomAttribute<RequiredAttribute>() != null;
@@ -319,15 +324,21 @@ namespace Linq.AI.OpenAI
 
         internal static SystemChatMessage GetTransformerSystemPrompt(string goal, string? instructions = null)
         {
+            var instructionsText = instructions == null ? string.Empty :
+                $$""""
+                <INSTRUCTIONS>
+                Transform <ITEM> using following instructions:
+                {{instructions}}
+                """";
             return new SystemChatMessage($$"""
-                    You are an expert at transforming.
+                    You are an expert at transforming item. 
+                    The transformation should acheive the <GOAL>.
+                    You should follow the <INSTRUCTIONS> if provided to transform the item.
 
                     <GOAL>
                     {{goal}}
 
-                    <INSTRUCTIONS>
-                    Transform <ITEM> using the directions in the provided <GOAL>.
-                    {{instructions}}
+                    {{instructionsText}}
                     """);
         }
 
@@ -358,7 +369,7 @@ namespace Linq.AI.OpenAI
             {
                 return new UserChatMessage(ChatMessageContentPart.CreateTextPart("<ITEM>"), ChatMessageContentPart.CreateImagePart(uri));
             }
-            else if (item is Uri[] uris)
+            else if (item is IEnumerable<Uri> uris)
             {
                 List<ChatMessageContentPart> parts = new List<ChatMessageContentPart>()
                 {

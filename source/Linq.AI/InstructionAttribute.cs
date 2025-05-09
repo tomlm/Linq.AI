@@ -1,4 +1,6 @@
-﻿namespace Linq.AI
+﻿using System;
+
+namespace Linq.AI
 {
     public class InstructionAttribute : Attribute
     {

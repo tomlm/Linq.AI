@@ -1,9 +1,15 @@
 ﻿using Microsoft.Extensions.AI;
+using System.Collections.Generic;
 
 namespace Linq.AI.Microsoft
 {
     public class CompletionContext
     {
+        public CompletionContext()
+        {
+            Options = new ChatOptions();
+        }
+
         /// <summary>
         /// Transformation item
         /// </summary>
@@ -12,7 +18,7 @@ namespace Linq.AI.Microsoft
         /// <summary>
         /// Options used for the completion
         /// </summary>
-        public required ChatOptions Options { get; set; }
+        public ChatOptions Options { get; set; }
 
         /// <summary>
         /// Last completion

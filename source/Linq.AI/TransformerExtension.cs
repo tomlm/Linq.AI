@@ -1,4 +1,7 @@
-﻿namespace Linq.AI
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace Linq.AI
 {
     public static class TransformerExtension
     {

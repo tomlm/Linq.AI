@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 
 namespace Linq.AI
@@ -45,11 +48,11 @@ namespace Linq.AI
             {
                 schema["type"] = "boolean";
             }
-            else if (type == typeof(DateOnly))
-            {
-                schema["type"] = "string";
-                //schema["format"] = "date";
-            }
+            //else if (type == typeof(DateOnly))
+            //{
+            //    schema["type"] = "string";
+            //    //schema["format"] = "date";
+            //}
             else if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
             {
                 schema["type"] = "string";

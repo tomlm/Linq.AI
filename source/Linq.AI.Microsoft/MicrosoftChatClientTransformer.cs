@@ -1,11 +1,17 @@
 ﻿using Microsoft.Extensions.AI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Linq.AI.Microsoft
 {
@@ -201,28 +207,34 @@ namespace Linq.AI.Microsoft
         /// <exception cref="Exception"></exception>
         public MicrosoftChatClientTransformer AddFunction(string name, string description, Delegate del)
         {
-            ArgumentNullException.ThrowIfNull(name);
-            ArgumentNullException.ThrowIfNull(description);
-            ArgumentNullException.ThrowIfNull(del);
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (description == null) throw new ArgumentNullException(nameof(description));
+            if (del == null) throw new ArgumentNullException(nameof(del));
             this.Tools.Add(AIFunctionFactory.Create(del, new AIFunctionFactoryOptions() { Name = name, Description = description }));
             return this;
         }
 
         internal static ChatMessage GetTransformerSystemPrompt(string goal, bool hasItem, string? instructions = null)
         {
-            var transformText = hasItem ? "Transform <ITEM> using the directions in the provided <GOAL>." : "";
+            var instructionsText = instructions == null ? string.Empty :
+                $$""""
+                <INSTRUCTIONS>
+                Transform <ITEM> using following instructions:
+                {{instructions}}
+                """";
             return new ChatMessage(ChatRole.System,
                     $$"""
-                    You are an expert at transforming.
+                    You are an expert at transforming items. 
+                    The transformation should acheive the <GOAL>.
+                    You should follow the <INSTRUCTIONS> if provided to transform the item.
 
                     <GOAL>
                     {{goal}}
 
-                    <INSTRUCTIONS>
-                    {{transformText}}
-                    {{instructions}}
+                    {{instructionsText}}
                     """);
         }
+
 
         internal static ChatMessage GetTransformerItemMessage(object item)
         {
@@ -254,7 +266,7 @@ namespace Linq.AI.Microsoft
                     CreateUriContent(uri)
                 });
             }
-            else if (item is Uri[] uris)
+            else if (item is IEnumerable<Uri> uris)
             {
                 List<AIContent> parts = new List<AIContent>()
                 {

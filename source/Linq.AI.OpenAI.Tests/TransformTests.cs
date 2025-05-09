@@ -195,7 +195,7 @@ namespace Linq.AI.OpenAI.Tests
         {
             var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
             var uri2 = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg");
-            var result = await GetModel().MatchesAsync(new { uri, uri2 }, "Are these pictures of people drinking beer?");
+            var result = await GetModel().MatchesAsync(new Uri[] { uri, uri2 }, "Are these pictures of people drinking beer?");
             Assert.IsTrue(result);
         }
 

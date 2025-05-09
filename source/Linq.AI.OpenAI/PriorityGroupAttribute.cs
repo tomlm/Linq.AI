@@ -1,4 +1,6 @@
-﻿namespace Linq.AI.OpenAI
+﻿using System;
+
+namespace Linq.AI.OpenAI
 {
     /// <summary>
     /// PriorityGroup on a method

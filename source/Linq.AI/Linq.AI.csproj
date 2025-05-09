@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>11.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>3.0.1</Version>
-    <AssemblyVersion>3.0.1.0</AssemblyVersion>
+    <Version>3.1.0</Version>
+    <AssemblyVersion>3.1.0.0</AssemblyVersion>
     <Description>Core library for Linq extensions for AI transformations.</Description>
     <Company>Iciclecreek</Company>
     <Authors>Tom Laird-McConnell</Authors>
@@ -30,9 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Iciclecreek.Async" Version="2.1.0" />
+    <PackageReference Include="Iciclecreek.Async" Version="2.2.1" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="9.4.3-preview.1.25230.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 

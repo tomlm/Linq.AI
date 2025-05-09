@@ -47,12 +47,12 @@ namespace Linq.AI.OpenAI.Tests
             string[] items = ["horse", "tack", "caterpillar", "airplane", "sandwich"];
 
             var results = await items
-                                .WhereAsync(GetModel(), "The item is the second item")
+                                .WhereAsync(GetModel(), "the item is the second or forth item in the collection")
                                 .ToListAsync();
             Assert.IsFalse(results.Contains("horse"));
             Assert.IsTrue(results.Contains("tack"));
             Assert.IsFalse(results.Contains("caterpillar"));
-            Assert.IsFalse(results.Contains("airplane"));
+            Assert.IsTrue(results.Contains("airplane"));
             Assert.IsFalse(results.Contains("sandwich"));
         }
 

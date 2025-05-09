@@ -1,5 +1,6 @@
 ﻿using OpenAI.Chat;
 using System.ClientModel;
+using System.Collections.Generic;
 
 namespace Linq.AI.OpenAI
 {
@@ -13,7 +14,7 @@ namespace Linq.AI.OpenAI
         /// <summary>
         /// Options used for the completion
         /// </summary>
-        public required ChatCompletionOptions Options { get; set; }
+        public ChatCompletionOptions Options { get; set; }
 
         /// <summary>
         /// Last completion
