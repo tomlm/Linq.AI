@@ -40,7 +40,9 @@ namespace Linq.AI
             {
                 schema["type"] = "integer";
             }
-            else if (type == typeof(float) || type == typeof(double))
+            else if (type == typeof(float) || 
+                     type == typeof(double) || 
+                     type == typeof(decimal))
             {
                 schema["type"] = "number";
             }
@@ -48,28 +50,37 @@ namespace Linq.AI
             {
                 schema["type"] = "boolean";
             }
-            //else if (type == typeof(DateOnly))
-            //{
-            //    schema["type"] = "string";
-            //    //schema["format"] = "date";
-            //}
-            else if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
+            else if (type == typeof(DateTime) || 
+                     type == typeof(DateTimeOffset))
             {
                 schema["type"] = "string";
-                //schema["format"] = "date-time";
+                schema["format"] = "date-time";
+            }
+            else if (type == typeof(DateOnly))
+            {
+                schema["type"] = "string";
+                schema["format"] = "date";
+            }
+            else if (type == typeof(TimeOnly))
+            {
+                schema["type"] = "string";
+                schema["format"] = "time";
+            }
+            else if (type == typeof(TimeSpan))
+            {
+                schema["type"] = "string";
+                schema["format"] = "duration";
             }
             else if (type.IsArray || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)))
             {
                 schema["type"] = "array";
                 var itemType = type.IsArray ? type.GetElementType() : type.GetGenericArguments()[0];
-                schema["items"] = GetSchema(itemType!, true);
+                schema["items"] = GetSchema(itemType, true);
             }
             else if (type.IsEnum)
             {
-                var values = Enum.GetNames(type);
-
                 schema["type"] = "string";
-                schema["enum"] = JArray.FromObject(values);
+                schema["enum"] = JArray.FromObject(Enum.GetNames(type));
             }
             else
             {
@@ -98,6 +109,12 @@ namespace Linq.AI
                 }
                 schema["properties"] = propertiesSchema;
             }
+            var descriptionAttribute = type.GetCustomAttribute<DescriptionAttribute>();
+            if (descriptionAttribute != null)
+            {
+                schema["description"] = descriptionAttribute.Description;
+            }
+
             if (nullableType != null || !type.IsValueType)
             {
                 if (!isRequired)
