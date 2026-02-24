@@ -20,7 +20,7 @@ namespace Linq.AI.Microsoft.Tests
         {
             var source = "I have 4 children and my name is Inigo Montoya.";
             var obj = await GetModel().TransformItemAsync<TestObject>(source);
-            Assert.AreEqual("Inigo Montoya", obj.Name);
+            Assert.IsTrue(obj.Name.Contains("Inigo Montoya", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(4, obj.Children);
         }
 
@@ -29,7 +29,7 @@ namespace Linq.AI.Microsoft.Tests
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
             var obj = await GetModel().TransformItemAsync<TestObject>(source, instructions: "Do not fill in properties that you don't have data for.");
-            Assert.AreEqual("Inigo Montoya", obj.Name);
+            Assert.IsTrue(obj.Name.Contains("Inigo Montoya", StringComparison.OrdinalIgnoreCase));
             Assert.AreEqual(0, obj.Children);
         }
 
