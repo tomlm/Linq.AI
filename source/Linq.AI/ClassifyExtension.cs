@@ -109,7 +109,7 @@ namespace Linq.AI
         /// <returns>list of classifications</returns>
         public static IAsyncEnumerable<ClassifiedItem<ItemT, EnumT>> ClassifyAsync<ItemT, EnumT>(this IAsyncEnumerable<ItemT> source, ITransformer model, string? instructions = null)
             where EnumT : struct, Enum
-            => source.SelectAwaitWithCancellation(async (item, index, ct) =>
+            => source.Select(async (item, index, ct) =>
             {
                 var category = await model.ClassifyAsync<EnumT>(item!, instructions, ct);
                 return new ClassifiedItem<ItemT, EnumT>()
@@ -129,7 +129,7 @@ namespace Linq.AI
         /// <returns>classifications</returns>
         public static IAsyncEnumerable<ClassifiedItem<ItemT, string>> ClassifyAsync<ItemT>(this IAsyncEnumerable<ItemT> source, ITransformer model, IList<string> categories, string? instructions = null)
             where ItemT : class
-            => source.SelectAwaitWithCancellation(async (item, index, ct) =>
+            => source.Select(async (item, index, ct) =>
             {
                 var category = await model.ClassifyAsync(item, categories, instructions, ct);
                 return new ClassifiedItem<ItemT, string>()

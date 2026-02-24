@@ -48,7 +48,7 @@ namespace Linq.AI.Microsoft
         /// <summary>
         /// Temperature to use.
         /// </summary>
-        public float? Temperature { get; set; } = 0.0f;
+        public float? Temperature { get; set; } = 1.0f;
 
         /// <summary>
         /// Tool registrations
@@ -87,7 +87,7 @@ namespace Linq.AI.Microsoft
                 Options = new ChatOptions()
                 {
                     ResponseFormat = responseFormat,
-                    Temperature = this.Temperature,
+                    // Temperature = this.Temperature,
                     AllowMultipleToolCalls = Tools.Any() ? true : null,
                     Tools = this.Tools
                 }

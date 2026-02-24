@@ -45,7 +45,7 @@ namespace Linq.AI
         /// <param name="instructions">(OPTIONAL) additional instructions on how to transform</param>
         /// <returns>collection of transformed text</returns>
         public static IAsyncEnumerable<ResultT> SelectAsync<ResultT>(this IAsyncEnumerable<object> source, ITransformer model, string? goal = null, string? instructions = null)
-            => source.SelectAwaitWithCancellation((item, index, ct) => model.TransformItemAsync<ResultT>(item, goal, instructions, ct));
+            => source.Select((item, index, ct) => model.TransformItemAsync<ResultT>(item, goal, instructions, ct));
     }
 }
 

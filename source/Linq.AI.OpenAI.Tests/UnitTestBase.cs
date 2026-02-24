@@ -61,7 +61,7 @@ namespace Linq.AI.OpenAI.Tests
 
     public class UnitTestBase
     {
-        public virtual ITransformer GetModel(string modelName = "gpt-4o-mini")
+        public virtual ITransformer GetModel(string modelName = "gpt-5.2")
         {
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()

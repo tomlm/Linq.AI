@@ -231,7 +231,7 @@ public static class MyFunctions
     }
 }
 
-var model = new new OpenAITransformer(model: "gpt-4o-mini", "<open ai key>")
+var model = new new OpenAITransformer(model: "gpt-5.2", "<open ai key>")
     .AddTools<MyFunctions>()
     .AddTool("Sum", "Add 2 numbers", 
         ([Description("the first number to add") int x, 

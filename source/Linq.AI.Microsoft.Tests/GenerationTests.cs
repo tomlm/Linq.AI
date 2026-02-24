@@ -23,7 +23,7 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Generate_Collection_Text()
         {
-            var results = await GetModel().GenerateAsync<string[]>("return the top 5 largest cities in the world");
+            var results = await GetModel().GenerateAsync<string[]>("return the 5 largest population cities in the world.");
             Assert.IsTrue(results.Any(item => item.Contains("Tokyo")));
             Assert.AreEqual(5, results.Count());
         }
@@ -58,6 +58,9 @@ namespace Linq.AI.Microsoft.Tests
     {
         [System.ComponentModel.Description("Name of the city")]
         public string? Name { get; set; }
+
+        [System.ComponentModel.Description("Name of the state or province")]
+        public string? State { get; set; }
 
         [System.ComponentModel.Description("Country name")]
         public string? Country { get; set; }

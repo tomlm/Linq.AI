@@ -51,7 +51,7 @@ namespace Linq.AI
         /// <param name="cancellationToken">(OPTIONAL) Cancellation Token</param>
         /// <returns>collection of summerization text</returns>
         public static IAsyncEnumerable<string> SummarizeAsync(this IAsyncEnumerable<object> source, ITransformer model, string? goal = null, string? instructions = null)
-            => source.SelectAwaitWithCancellation<object, string>((item, index, ct) => model.SummarizeAsync(item, goal ?? "summarize", instructions, ct));
+            => source.Select<object, string>((item, index, ct) => model.SummarizeAsync(item, goal ?? "summarize", instructions, ct));
     }
 }
 

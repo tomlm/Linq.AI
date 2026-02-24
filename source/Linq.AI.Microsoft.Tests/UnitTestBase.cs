@@ -62,7 +62,7 @@ namespace Linq.AI.Microsoft.Tests
 
     public class UnitTestBase
     {
-        public virtual ChatClientBuilder GetChatClientBuilder(string modelName = "gpt-4o-mini")
+        public virtual ChatClientBuilder GetChatClientBuilder(string modelName = "gpt-5.2")
         {
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ClassifyTests>()
@@ -74,7 +74,7 @@ namespace Linq.AI.Microsoft.Tests
             return new ChatClientBuilder(chatClient);
         }
 
-        public virtual ITransformer GetModel(string modelName = "gpt-4o-mini")
+        public virtual ITransformer GetModel(string modelName = "gpt-5.2")
         {
             var chatClient = GetChatClientBuilder(modelName)
                 .Build();

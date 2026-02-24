@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>11.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>3.2.0</Version>
-    <AssemblyVersion>3.2.0.0</AssemblyVersion>
+    <Version>3.3.0</Version>
+    <AssemblyVersion>3.3.0.0</AssemblyVersion>
     <Description>Linq.AI ITransformer implementation for Microsoft.Extensions.AI IChatClient</Description>
     <Company>Iciclecreek</Company>
     <Authors>Tom Laird-McConnell</Authors>
@@ -31,12 +31,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.AI" Version="9.4.3-preview.1.25230.7" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.3.0" />
     <PackageReference Include="MimeTypes" Version="2.5.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="System.Linq.Async" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

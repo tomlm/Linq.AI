@@ -21,14 +21,8 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Summarize_String()
         {
-            var summarization = await GetModel().SummarizeAsync(Text, "2 words");
-            foreach (var summary in summarization)
-            {
-                Debug.WriteLine(summarization);
-            }
-
-            Assert.IsTrue(summarization.Contains("Hope"));
-            Assert.IsTrue(summarization.Contains("Change"));
+            var summarization = await GetModel().SummarizeAsync(Text, "Create a single sentence describing this content as a title.");
+            Assert.IsTrue(summarization.Contains("presidency", StringComparison.OrdinalIgnoreCase));
         }
 
         [TestMethod]

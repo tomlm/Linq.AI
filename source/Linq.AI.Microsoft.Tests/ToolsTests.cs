@@ -9,13 +9,13 @@ namespace Linq.AI.Microsoft.Tests
     public class ToolsTests : UnitTestBase
     {
 
-        public override ChatClientBuilder GetChatClientBuilder(string modelName = "gpt-4o-mini")
+        public override ChatClientBuilder GetChatClientBuilder(string modelName = "gpt-5.2")
         {
             return base.GetChatClientBuilder(modelName)
                 .UseFunctionInvocation();
         }
 
-        public override ITransformer GetModel(string modelName = "gpt-4o-mini")
+        public override ITransformer GetModel(string modelName = "gpt-5.2")
         {
             var model = base.GetModel(modelName) as MicrosoftChatClientTransformer;
             ArgumentNullException.ThrowIfNull(model);
@@ -55,14 +55,14 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Tool_SingleFunctionStringTest()
         {
-            var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa in farenheit?");
-            Assert.IsTrue(await GetModel().CompareAsync("100 farenheit", result));
+            var result = await GetModel().GenerateAsync<string>("what is the temperature in farenheit in Ames, Iowa? ");
+            Assert.IsTrue(await GetModel().CompareAsync("100 farenheit", result, "Is the temperature the same?"));
         }
 
         [TestMethod]
         public async Task Tool_SingleFunctionStringTest2()
         {
-            var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa in celcius?");
+            var result = await GetModel().GenerateAsync<string>("what is the temperature in celsius in Ames, Iowa? ");
             var same = await GetModel().CompareAsync("37 degress celsius", result, "is the temperature the same");
             Assert.IsTrue(same);
         }

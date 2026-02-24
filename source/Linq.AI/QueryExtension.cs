@@ -79,7 +79,7 @@ namespace Linq.AI
         /// <param name="cancellationToken">(OPTIONAL) cancellation token to cancel the operation.</param>
         /// <returns>an answer in the form of ResultT</returns>
         public static IAsyncEnumerable<ResultT> QueryAboutAsync<ResultT>(this IAsyncEnumerable<object> source, ITransformer model, string question, string? instructions = null)
-            => source.SelectAwaitWithCancellation((item, index, ct) => model.TransformItemAsync<ResultT>(item, $"Answer the question about <ITEM>: {question}", instructions, ct));
+            => source.Select((item, index, ct) => model.TransformItemAsync<ResultT>(item, $"Answer the question about <ITEM>: {question}", instructions, ct));
     }
 }
 

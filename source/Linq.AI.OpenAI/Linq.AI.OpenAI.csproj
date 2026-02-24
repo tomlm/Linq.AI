@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>11.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>3.2.0</Version>
-    <AssemblyVersion>3.2.0.0</AssemblyVersion>
+    <Version>3.3.0</Version>
+    <AssemblyVersion>3.3.0.0</AssemblyVersion>
     <Description>Linq.AI ITransformer implementation for OpenAI API.</Description>
     <Company>Iciclecreek</Company>
     <Authors>Tom Laird-McConnell</Authors>
@@ -31,9 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenAI" Version="2.2.0-beta.4" />
+    <PackageReference Include="OpenAI" Version="2.8.0" />
     <PackageReference Include="Linq.AI" Version="2.0.6" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+    <PackageReference Include="System.Linq.Async" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
