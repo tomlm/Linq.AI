@@ -33,5 +33,6 @@ jobs:
       
     - name: Test
       run: |
+        dotnet user-secrets set OpenAIKey '${{ secrets.OPENAIKEY }}' -p source/Linq.AI.Microsoft.Tests/Linq.AI.Microsoft.Tests.csproj
         dotnet user-secrets set OpenAIKey '${{ secrets.OPENAIKEY }}' -p source/Linq.AI.OpenAI.Tests/Linq.AI.OpenAI.Tests.csproj
-        dotnet test --no-build --verbosity normal source/Linq.AI.OpenAI.sln
+        dotnet test --no-build --verbosity normal source/Linq.AI.sln
