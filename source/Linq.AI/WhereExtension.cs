@@ -52,7 +52,7 @@ namespace Linq.AI
         /// <param name="cancellationToken">(OPTIONAL) cancellation token</param>
         /// <returns>collection of objects that match the goal</returns>
         public static IAsyncEnumerable<T> WhereAsync<T>(this IAsyncEnumerable<T> source, ITransformer model, string constraint, string? instructions = null)
-            => source.WhereAwaitWithCancellation(async (item, index, ct) => await model.MatchesAsync(item!, constraint, Utils.GetItemIndexClause(index, instructions)));
+            => source.Where(async (item, index, ct) => await model.MatchesAsync(item!, constraint, Utils.GetItemIndexClause(index, instructions)));
     }
 }
 

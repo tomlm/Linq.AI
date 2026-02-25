@@ -67,7 +67,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_Text2Strings()
         {
-            var results = await GetModel().TransformItemAsync<string[]>(Text, "return titles that are bolded");
+            var results = await GetModel().TransformItemAsync<string[]>(Text, "return text that are bolded");
 
             string[] titles =
             [
@@ -185,7 +185,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_Vision_UriTest()
         {
-            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+            var uri = new Uri("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg");
             var result = await GetModel().SummarizeAsync(uri);
             Assert.IsTrue(result.Contains("beer"));
         }
@@ -193,8 +193,8 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_Vision_UrisTest()
         {
-            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
-            var uri2 = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg");
+            var uri = new Uri("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg");
+            var uri2 = new Uri("https://cdn.theatlantic.com/thumbor/18FK5ta-l4HVqfVbdqgPPwteyzU=/900x600/media/img/photo/2019/09/oktoberfest-2019-photos-opening-wee-1/o20_1176120168/original.jpg");
             var result = await GetModel().MatchesAsync(new Uri[] { uri, uri2 }, "Are these pictures of people drinking beer?");
             Assert.IsTrue(result);
         }
@@ -214,7 +214,7 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Transform_PartTest()
         {
-            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+            var uri = new Uri("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg");
             var data = await new HttpClient().GetByteArrayAsync(uri);
             var result = await GetModel().SummarizeAsync(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), "image/jpeg"));
             Assert.IsTrue(result.Contains("beer"));
@@ -225,9 +225,9 @@ namespace Linq.AI.OpenAI.Tests
         {
             var result = await GetModel().MatchesAsync(new[]
             {
-                ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg")),
-                ChatMessageContentPart.CreateImagePart(new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg"))
-            }, "Are these pictures of people drinking beer?");
+                ChatMessageContentPart.CreateImagePart(new Uri("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg")),
+                ChatMessageContentPart.CreateImagePart(new Uri("https://cdn.theatlantic.com/thumbor/18FK5ta-l4HVqfVbdqgPPwteyzU=/900x600/media/img/photo/2019/09/oktoberfest-2019-photos-opening-wee-1/o20_1176120168/original.jpg"))
+            }, "Are these pictures of people with beer?");
             Assert.IsTrue(result);
         }
 

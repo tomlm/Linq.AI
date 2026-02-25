@@ -67,7 +67,7 @@ namespace Linq.AI.OpenAI
         /// <summary>
         /// Temperature to use.
         /// </summary>
-        public float? Temperature { get; set; } = 0.0f;
+        public float? Temperature { get; set; } = 1.0f;
 
         /// <summary>
         /// Tool registrations
@@ -197,16 +197,15 @@ namespace Linq.AI.OpenAI
             context.Messages.Add(GetTransformerItemMessage(item));
 
             Debug.WriteLine("===============================================");
-#if DEBUG
-            lock (this)
-            {
-                foreach (var message in context.Messages)
-                {
-                    foreach (var part in message.Content)
-                        Debug.WriteLine(JsonConvert.SerializeObject(part, JsonSettings));
-                }
-            }
-#endif
+//#if DEBUG
+//            lock (this)
+//            {
+//                foreach (var message in context.Messages)
+//                {
+//                    Debug.WriteLine(JsonConvert.SerializeObject(message.Content, JsonSettings));
+//                }
+//            }
+//#endif
             int retries = 2;
             while (retries-- > 0)
             {

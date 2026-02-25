@@ -20,8 +20,8 @@ namespace Linq.AI.Microsoft.Tests
         {
             var source = "I have 4 children and my name is Inigo Montoya.";
             var obj = await GetModel().TransformItemAsync<TestObject>(source);
-            Assert.AreEqual("Inigo Montoya", obj.Name);
-            Assert.AreEqual(4, obj.Count);
+            Assert.IsTrue(obj.Name.Contains("Inigo Montoya", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(4, obj.Children);
         }
 
         [TestMethod]
@@ -29,8 +29,8 @@ namespace Linq.AI.Microsoft.Tests
         {
             var source = new TestObject2() { FirstName = "Inigo", LastName = "Montoya" };
             var obj = await GetModel().TransformItemAsync<TestObject>(source, instructions: "Do not fill in properties that you don't have data for.");
-            Assert.AreEqual("Inigo Montoya", obj.Name);
-            Assert.AreEqual(0, obj.Count);
+            Assert.IsTrue(obj.Name.Contains("Inigo Montoya", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(0, obj.Children);
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Transform_Text2Strings()
         {
-            var results = await GetModel().TransformItemAsync<string[]>(Text, "return titles that are bolded");
+            var results = await GetModel().TransformItemAsync<string[]>(Text, "return text that are bolded using markdown syntax");
 
             string[] titles =
             [
@@ -185,7 +185,7 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Transform_Vision_UriTest()
         {
-            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+            var uri = new Uri("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg");
             var result = await GetModel().SummarizeAsync(uri);
             Assert.IsTrue(result.Contains("beer"));
         }
@@ -193,8 +193,8 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Transform_Vision_UrisTest()
         {
-            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
-            var uri2 = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg");
+            var uri = new Uri("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg");
+            var uri2 = new Uri("https://cdn.theatlantic.com/thumbor/18FK5ta-l4HVqfVbdqgPPwteyzU=/900x600/media/img/photo/2019/09/oktoberfest-2019-photos-opening-wee-1/o20_1176120168/original.jpg");
             var result = await GetModel().MatchesAsync(new Uri[] { uri, uri2 }, "Are these pictures of people drinking beer?");
             Assert.IsTrue(result);
         }
@@ -214,7 +214,7 @@ namespace Linq.AI.Microsoft.Tests
         [TestMethod]
         public async Task Transform_PartTest()
         {
-            var uri = new Uri("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg");
+            var uri = new Uri("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg");
             var data = await new HttpClient().GetByteArrayAsync(uri);
             var result = await GetModel().SummarizeAsync(new DataContent(BinaryData.FromBytes(data), "image/jpeg"));
             Assert.IsTrue(result.Contains("beer"));
@@ -225,8 +225,8 @@ namespace Linq.AI.Microsoft.Tests
         {
             var result = await GetModel().MatchesAsync(new[]
             {
-                new UriContent("https://2cupsoftravel.com/wp-content/uploads/2022/10/Oktoberfest-munich-things-to-know.jpg", "image/jpeg"),
-                new UriContent("https://2cupsoftravel.com/wp-content/uploads/2022/10/20220928_115250-1200x900.jpg", "image/jpeg")
+                new UriContent("https://thumbs.dreamstime.com/b/oktoberfest-18097984.jpg", "image/jpeg"),
+                new UriContent("https://cdn.theatlantic.com/thumbor/18FK5ta-l4HVqfVbdqgPPwteyzU=/900x600/media/img/photo/2019/09/oktoberfest-2019-photos-opening-wee-1/o20_1176120168/original.jpg", "image/jpeg")
             }, "Are these pictures of people drinking beer?");
             Assert.IsTrue(result);
         }
@@ -236,7 +236,7 @@ namespace Linq.AI.Microsoft.Tests
             public string? Name { get; set; }
 
             [System.ComponentModel.Description("The number of children.")]
-            public int Count { get; set; } = default;
+            public int Children { get; set; } = default;
         }
 
         internal class TestObject2

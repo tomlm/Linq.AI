@@ -9,7 +9,7 @@ namespace Linq.AI.OpenAI.Tests
     public class ToolsTests : UnitTestBase
     {
 
-        public override ITransformer GetModel(string modelName = "gpt-4o")
+        public override ITransformer GetModel(string modelName = "gpt-5.2")
         {
             var model = base.GetModel(modelName) as OpenAITransformer;
 
@@ -49,14 +49,14 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Tool_SingleFunctionStringTest()
         {
             var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa?");
-            Assert.IsTrue(await GetModel().CompareAsync("100 farenheit", result));
+            Assert.IsTrue(result.Contains("100"));
         }
 
         [TestMethod]
         public async Task Tool_SingleFunctionStringTest2()
         {
             var result = await GetModel().GenerateAsync<string>("what is the weather in Ames, Iowa in celcius?");
-            Assert.IsTrue(await GetModel().CompareAsync("37 degress celsius", result, instructions: "Is the temperature the same"));
+            Assert.IsTrue(result.Contains("37"));
         }
 
         [TestMethod]

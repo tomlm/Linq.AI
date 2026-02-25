@@ -75,7 +75,7 @@ namespace Linq.AI
             {
                 schema["type"] = "array";
                 var itemType = type.IsArray ? type.GetElementType() : type.GetGenericArguments()[0];
-                schema["items"] = GetSchema(itemType, true);
+                schema["items"] = GetSchema(itemType!, true);
             }
             else if (type.IsEnum)
             {

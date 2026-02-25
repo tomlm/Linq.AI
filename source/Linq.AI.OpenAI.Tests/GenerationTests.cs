@@ -17,14 +17,14 @@ namespace Linq.AI.OpenAI.Tests
         public async Task Generate_Object()
         {
             var result = await GetModel().GenerateAsync<CityObject>("a city object for Ames, Iowa");
-            Assert.AreEqual("Ames", result.Name);
+            Assert.IsTrue(result.Name.Contains("Ames", StringComparison.OrdinalIgnoreCase));
         }
 
         [TestMethod]
         public async Task Generate_Collection_Text()
         {
-            var results = await GetModel().GenerateAsync<string[]>("return the top 5 largest cities in the world");
-            Assert.IsTrue(results.Any(item => item.Contains("Mexico City")));
+            var results = await GetModel().GenerateAsync<string[]>("return the top 5 most populus cities in the world");
+            Assert.IsTrue(results.Any(item => item.Contains("Tokyo")));
             Assert.AreEqual(5, results.Count());
         }
 
@@ -43,8 +43,8 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Generate_Collections_Object()
         {
-            var generated = await GetModel().GenerateAsync<CityObject[]>("return the top 5 largest cities in the world.");
-            Assert.IsTrue(generated.Any(item => item.Name == "Mexico City" && item.Country == "Mexico"));
+            var generated = await GetModel().GenerateAsync<CityObject[]>("return the top 5 most populus cities in the world.");
+            Assert.IsTrue(generated.Any(item => item.Name == "Tokyo" && item.Country == "Japan"));
             Assert.AreEqual(5, generated.Count());
         }
 

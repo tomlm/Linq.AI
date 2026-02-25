@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Linq.AI.OpenAI", "Linq.AI.OpenAI\Linq.AI.OpenAI.csproj", "{57516944-78C8-4D97-9760-E2FF4C8F394F}"
 EndProject
@@ -12,6 +12,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linq.AI.Microsoft", "Linq.AI.Microsoft\Linq.AI.Microsoft.csproj", "{5F9F5725-2712-4748-B5A7-E2D83AB0EDDF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linq.AI.Microsoft.Tests", "Linq.AI.Microsoft.Tests\Linq.AI.Microsoft.Tests.csproj", "{9384E58F-D144-4ADC-837F-D93919D945C1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{739DDBEB-27A9-466C-9872-A8CB47E84FE7}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\BuildAndRunTests.yml = ..\.github\workflows\BuildAndRunTests.yml
+		..\.github\workflows\PublishIncrementalNuget.yml = ..\.github\workflows\PublishIncrementalNuget.yml
+		..\.github\workflows\PublishNuget.yml = ..\.github\workflows\PublishNuget.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

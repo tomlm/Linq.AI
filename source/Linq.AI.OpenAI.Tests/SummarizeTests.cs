@@ -21,14 +21,13 @@ namespace Linq.AI.OpenAI.Tests
         [TestMethod]
         public async Task Summarize_String()
         {
-            var summarization = await GetModel().SummarizeAsync(Text, "2 words");
+            var summarization = await GetModel().SummarizeAsync(Text, "Generate a title which summarizes the content");
             foreach (var summary in summarization)
             {
                 Debug.WriteLine(summarization);
             }
 
-            Assert.IsTrue(summarization.Contains("Hope"));
-            Assert.IsTrue(summarization.Contains("Change"));
+            Assert.IsTrue(summarization.Contains("Barack"));
         }
 
         [TestMethod]

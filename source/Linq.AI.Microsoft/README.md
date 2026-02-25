@@ -234,7 +234,7 @@ public static class MyFunctions
 }
 
 // create OpenAI Chat Client
-var chatClient = new OpenAI.Chat.ChatClient("gpt-4o-mini", config["OpenAIKey"]).AsIChatClient();
+var chatClient = new OpenAI.Chat.ChatClient("gpt-5.2", config["OpenAIKey"]).AsIChatClient();
 
 // Turn on Function invocation
 chatClient = new ChatClientBuilder(chatClient)

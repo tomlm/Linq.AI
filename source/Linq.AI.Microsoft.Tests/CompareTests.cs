@@ -27,7 +27,7 @@ namespace Linq.AI.Microsoft.Tests
                 new
                 {
                     Introduction = "I'm Tom",
-                    Background = "I'm from Kirkland, Washington"
+                    Background = "My home is Kirkland, Washington"
                 }));
         }
 
